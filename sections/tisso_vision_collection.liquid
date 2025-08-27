@@ -1,6 +1,8 @@
 {%- if section.settings.collection.products.size > 0 -%}
-
-ssaaa
+    {% paginate section.settings.collection.products by section.settings.products_to_show %}
+            {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+            {% endfor %}
+    {% endpaginate %}
 {%- else -%}
 ss
 {%- endif -%}
@@ -24,7 +26,7 @@ ss
             "min": 2,
             "max": 25,
             "step": 1,
-            "default": 3,
+            "default": 6,
             "label": "Product to Show"
         },     
     ],
