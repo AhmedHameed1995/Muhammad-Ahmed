@@ -4,8 +4,8 @@
             {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
                 <div class="tissio_products">
                     <div class="product_image">
-                        {%- if card_product.featured_media -%}
-                            <img src={{ card_product.featured_media }} >
+                        {%- if product.featured_media -%}
+                            <img src={{ product.featured_media }} >
                         {% endif %}
                     </div>
                     <div class="product_text">
