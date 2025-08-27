@@ -16,6 +16,11 @@
     </div>
     <div class="hero_banner">
         {% if section.settings.image != blank %}
+            
+
+            {{ 'lifestyle-2' | placeholder_svg_tag }}
+
+
             <img 
                 src="{{ section.settings.image | img_url: '1600x' }}" 
                 alt="{{ section.settings.hero_heading | escape }}" 
