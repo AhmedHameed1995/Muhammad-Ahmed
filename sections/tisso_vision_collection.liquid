@@ -6,7 +6,7 @@
                     <div class="tissio_products">
                         <div class="product_image">
                             {%- if product.featured_media -%}
-                                <a href="{{  product.handle }}"><img src="{{ product.featured_media | image_url:  width: 360, height: 360  }} 360w" width="" /></a>
+                                <img src="{{ product.featured_media | image_url:  width: 360, height: 360  }} 360w" width="" />
                             {% endif %}
                         </div>
                         <div class="product_text">
