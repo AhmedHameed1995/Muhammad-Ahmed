@@ -9,9 +9,6 @@
                                 <img src="{{ product.featured_media | image_url:  width: 360, height: 360  }} 360w" width="" />
                             {% endif %}
                         </div>
-                        <div class="product_text">
-                            <a href="{{  product.handle }}">{{ product.title }}</a>
-                        </div>
                     </div>
                 {% endfor %}
             {% endpaginate %}
