@@ -3,7 +3,12 @@
         {% paginate section.settings.collection.products by section.settings.products_to_show %}
             {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
                 <div class="tissio_products">
-                    {{ product.title }}
+                    <div class="product_image">
+                        
+                    </div>
+                    <div class="product_text">
+                        {{ product.title }}
+                    </div>
                 </div>
             {% endfor %}
         {% endpaginate %}
