@@ -12,7 +12,15 @@
     "banner_7pTfia": {
       "type": "banner",
       "name": "Banner Section",
-      "settings": {}
+      "settings": {
+        "logo": "",
+        "ideal_gift_text": "",
+        "choose_gift": "",
+        "hero_heading": "",
+        "hero_text": "",
+        "hero_btn": "",
+        "hero_bottom": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+      }
     },
     "image_banner": {
       "type": "image-banner",
