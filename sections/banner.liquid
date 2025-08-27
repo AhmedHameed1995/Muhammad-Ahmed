@@ -14,12 +14,14 @@
             </div>
         </div>
     </div>
-      <div class="hero_banner">
-    {% if section.settings.image != blank %}
+    <div class="hero_banner">
+        {% if section.settings.image != blank %}
             <img 
                 src="{{ section.settings.image | img_url: '1600x' }}" 
                 alt="{{ section.settings.hero_heading | escape }}" 
                 class="hero_img"
+                width=""
+                height=""
             >
             <div class="hero_content">
                 {% if section.settings.hero_heading != blank %}
