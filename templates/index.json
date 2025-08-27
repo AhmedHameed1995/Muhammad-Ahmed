@@ -67,7 +67,7 @@
       "type": "tisso_vision_collection",
       "name": "Tisso Vision Collection",
       "settings": {
-        "collection": ""
+        "collection": "frontpage"
       }
     },
     "featured_collection": {
