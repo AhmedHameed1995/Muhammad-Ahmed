@@ -245,7 +245,6 @@
     const descriptionEl = document.getElementById('qa-modal-description');
     const priceEl = document.getElementById('qa-price');
     const variantSelect = document.getElementById('qa-variant');
-    const viewLink = document.getElementById('qa-view-link');
 
     // helpers
     function openModal() {
@@ -535,7 +534,6 @@
     function populateModal(product) {
         titleEl.textContent = product.title || '';
         descriptionEl.innerHTML = product.description || '';
-        viewLink.href = `/products/${product.handle}`;
 
         // image
         const firstImg =
