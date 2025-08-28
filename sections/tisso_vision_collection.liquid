@@ -447,8 +447,9 @@
     sizeList.addEventListener('click', e => {
       const li = e.target.closest('.qa-dd-option');
       if (!li || li.getAttribute('aria-disabled') === 'true') return;
-      sizeSetValue(li.dataset.value);
-      dd.classList.remove('open'); btn.setAttribute('aria-expanded','false');
+      sizeSetValue(li.dataset.value + ' ss');
+      dd.classList.remove('open'); 
+      btn.setAttribute('aria-expanded','false');
     });
     sizeList.addEventListener('keydown', e => {
       const avail = [...sizeList.querySelectorAll('.qa-dd-option[aria-disabled="false"]')];
