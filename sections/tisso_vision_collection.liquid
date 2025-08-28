@@ -166,279 +166,282 @@
 <script>
 
 (function() {
-  const modal = document.getElementById('quick-add-modal');
-  const imgEl = document.getElementById('qa-image');
-  const titleEl = document.getElementById('qa-modal-title');
-  const descriptionEl = document.getElementById('qa-modal-description');
-  const priceEl = document.getElementById('qa-price');
-  const variantSelect = document.getElementById('qa-variant');
-  const viewLink = document.getElementById('qa-view-link');
+    const modal = document.getElementById('quick-add-modal');
+    const imgEl = document.getElementById('qa-image');
+    const titleEl = document.getElementById('qa-modal-title');
+    const descriptionEl = document.getElementById('qa-modal-description');
+    const priceEl = document.getElementById('qa-price');
+    const variantSelect = document.getElementById('qa-variant');
+    const viewLink = document.getElementById('qa-view-link');
 
-  // helpers
-  function openModal() {
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden', 'false');
-    // prevent body scroll
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    // focus close for accessibility
-    modal.querySelector('.qa-close').focus();
-  }
-  function closeModal() {
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-  }
-  function addWidthParam(url, width) {
-    if (!url) return '';
-    try {
-      const u = new URL(url);
-      if (!u.searchParams.get('width')) u.searchParams.set('width', String(width));
-      return u.toString();
-    } catch(_) {
-      // fallback if relative URL
-      const joiner = url.includes('?') ? '&' : '?';
-      return url + joiner + 'width=' + width;
+    // helpers
+    function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        // prevent body scroll
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+        // focus close for accessibility
+        modal.querySelector('.qa-close').focus();
     }
-  }
-  function toCents(val) {
-    const s = String(val ?? '');
-    const n = Number(s.replace(/[^\d.]/g, ''));
-    if (!isFinite(n)) return 0;
-    return s.includes('.') ? Math.round(n * 100) : Math.round(n);
-  }
-  function formatMoneyGeneric(cents) {
-    const currency = (window.Shopify && Shopify.currency && Shopify.currency.active) || 'USD';
-    const locale = (window.Shopify && Shopify.locale) || navigator.language || 'en-US';
-    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
-  }
-  function formatMoney(value) {
-    const cents = toCents(value);
-    if (window.Shopify && typeof Shopify.formatMoney === 'function') {
-      // Using Shopify's own formatter if available
-      return Shopify.formatMoney(cents);
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
     }
-    return formatMoneyGeneric(cents);
-  }
-
-  function renderPriceForVariant(variant, product) {
-    const priceHTML = [];
-    if (variant) {
-      priceHTML.push(`<span class="price">${formatMoney(variant.price)}</span>`);
-      // Some themes have compare_at_price for variants; fallback to product-level if needed
-      const compare = variant.compare_at_price || product?.compare_at_price;
-      if (compare && toCents(compare) > toCents(variant.price)) {
-        priceHTML.push(`<span class="compare">${formatMoney(compare)}</span>`);
-      }
-    }
-    priceEl.innerHTML = priceHTML.join('');
-  }
-
-  function renderOptionsUI(product) {
-  const modalRoot = document.getElementById('quick-add-modal');
-  const optWrap = modalRoot.querySelector('.qa-options'); // scope to modal
-  if (!optWrap) return;
-  optWrap.innerHTML = '';
-
-  const variants = product.variants || [];
-  if (!variants.length) return;
-
-  // build option meta (names + values)
-  const rawNames = Array.isArray(product.options) ? product.options : [];
-  const options = [1,2,3].map(i => ({
-    idx: i,
-    name: rawNames[i-1] || `Option ${i}`,
-    values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
-  })).filter(o => o.values.length);
-
-  // smarter detection of Color / Size
-  const COLOR_WORDS = /(colou?r|farbe|kleur)/i;
-  const SIZE_WORDS  = /(size|talla|größe|maat)/i;
-  const looksLikeColor = vals => vals.some(v => /(black|white|blue|navy|red|green|yellow|purple|pink|grey|gray|beige|brown|orange|silver|gold|#|rgb)/i.test(v));
-  const looksLikeSize  = vals => vals.some(v => /^(xxs|xs|s|m|l|xl|xxl|2xl|3xl|[0-9]{2}|[0-9]+(cm|in|us|uk|eu)?)$/i.test(String(v).replace(/\s/g,'')));
-
-  let color = options.find(o => COLOR_WORDS.test(o.name)) || options.find(o => looksLikeColor(o.values));
-  let size  = options.find(o => SIZE_WORDS.test(o.name))  || options.find(o => looksLikeSize(o.values) && o !== color);
-
-  // fallback if still missing
-  if (!color && options[0]) color = options[0];
-  if (!size && options[1])  size  = options[1] === color ? options[0] : options[1];
-
-  const hiddenVariant = modalRoot.querySelector('#qa-variant');
-
-  const anyAvail = filter => variants.some(v => Object.keys(filter).every(k => v[k] === filter[k]) && v.available);
-  const idFor = (prefix, val) => `${prefix}-${String(val).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
-  const colorToHex = (name) => {
-    const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316',beige:'#F5F5DC',brown:'#8B4513',pink:'#EC4899',silver:'#C0C0C0',gold:'#D4AF37'};
-    const s=String(name||'').toLowerCase();
-    const m=s.match(/#([0-9a-f]{3,8})/i); if (m) return m[0];
-    if (/^rgb/.test(s)) return s;
-    const key=Object.keys(map).find(k=>s.includes(k));
-    return key?map[key]:'#111';
-  };
-
-  function currentSelection() {
-    const sel = {};
-    if (color) {
-      const radio = optWrap.querySelector('input[name="qa-color"]:checked');
-      sel[`option${color.idx}`] = radio ? radio.value : optWrap.querySelector('#qa-color')?.value || '';
-    }
-    if (size) {
-      sel[`option${size.idx}`] = optWrap.querySelector('#qa-size')?.value || '';
-    }
-    return sel;
-  }
-  function pickVariant() {
-    const sel = currentSelection();
-    const candidates = variants.filter(v => Object.entries(sel).every(([k,val]) => !val || v[k] === val));
-    return candidates.find(v => v.available) || candidates[0] || variants[0];
-  }
-  function sync() {
-    const v = pickVariant();
-    if (hiddenVariant && v) hiddenVariant.value = String(v.id);
-    renderPriceForVariant(v, product);
-  }
-
-  // build Color UI
-  if (color) {
-    const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
-    fs.innerHTML = `<legend>${color.name.name}</legend>`;
-    if (color.values.length <= 3) {
-      const seg = document.createElement('div'); seg.className='qa-segmented';
-      color.values.forEach((val,i) => {
-        const ok = anyAvail({[`option${color.idx}`]: val});
-        const id = idFor('qa-color', val);
-        seg.insertAdjacentHTML('beforeend',
-          `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
-           <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
-      });
-      fs.appendChild(seg);
-    } else {
-      const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
-      const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
-      sel.appendChild(new Option('Choose a color',''));
-      color.values.forEach(val => {
-        const o = new Option(val, val);
-        if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true;
-        sel.appendChild(o);
-      });
-      wrap.appendChild(sel); fs.appendChild(wrap);
-    }
-    optWrap.appendChild(fs);
-  }
-
-  // build Size UI (styled select)
-  if (size) {
-    const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
-    fs.innerHTML = `<legend>${size.name.name}</legend>`;
-    const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
-    const sel = document.createElement('select'); sel.id='qa-size'; sel.setAttribute('aria-label','Size');
-    sel.appendChild(new Option('Choose your size',''));
-    size.values.forEach(val => {
-      const o = new Option(val, val);
-      if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
-      sel.appendChild(o);
-    });
-    wrap.appendChild(sel); fs.appendChild(wrap); optWrap.appendChild(fs);
-  }
-
-  // defaults for selects
-  ['#qa-color','#qa-size'].forEach(id => {
-    const el = optWrap.querySelector(id);
-    if (el && !el.value) {
-      const first = Array.from(el.options).find(o => o.value && !o.disabled);
-      if (first) el.value = first.value;
-    }
-  });
-
-  optWrap.querySelectorAll('input[name="qa-color"]').forEach(i => i.addEventListener('change', sync));
-  optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
-  optWrap.querySelector('#qa-size')?.addEventListener('change', sync);
-
-  sync();
-}
-
-
-
-  function populateModal(product) {
-    titleEl.textContent = product.title || '';
-    descriptionEl.innerHTML = product.description || '';
-    viewLink.href = `/products/${product.handle}`;
-
-    // image
-    const firstImg =
-      (product.images && product.images[0] && (product.images[0].src || product.images[0])) ||
-      product.featured_image ||
-      product.image;
-    imgEl.src = firstImg ? addWidthParam(firstImg, 900) : '';
-    imgEl.alt = product.title || '';
-
-    // variants
-    variantSelect.innerHTML = '';
-    const variants = product.variants || [];
-    console.log(product.variants);
-    variants.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.id;
-      opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
-      opt.dataset.price = v.price;
-      opt.dataset.compare = v.compare_at_price || '';
-      variantSelect.appendChild(opt);
-    });
-
-    const defaultVariant =
-      variants.find(v => v.available) || variants[0] || null;
-
     
-    if (defaultVariant) variantSelect.value = String(defaultVariant.id);
-        renderPriceForVariant(defaultVariant, product);
-        renderOptionsUI(product);  
-        openModal();
-  }
+    function addWidthParam(url, width) {
+        if (!url) return '';
+        try {
+        const u = new URL(url);
+        if (!u.searchParams.get('width')) u.searchParams.set('width', String(width));
+        return u.toString();
+        } catch(_) {
+        // fallback if relative URL
+        const joiner = url.includes('?') ? '&' : '?';
+        return url + joiner + 'width=' + width;
+        }
+    }
+    
+    function toCents(val) {
+        const s = String(val ?? '');
+        const n = Number(s.replace(/[^\d.]/g, ''));
+        if (!isFinite(n)) return 0;
+        return s.includes('.') ? Math.round(n * 100) : Math.round(n);
+    }
+
+    function formatMoneyGeneric(cents) {
+        const currency = (window.Shopify && Shopify.currency && Shopify.currency.active) || 'USD';
+        const locale = (window.Shopify && Shopify.locale) || navigator.language || 'en-US';
+        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
+    }
+
+    function formatMoney(value) {
+        const cents = toCents(value);
+        if (window.Shopify && typeof Shopify.formatMoney === 'function') {
+        // Using Shopify's own formatter if available
+        return Shopify.formatMoney(cents);
+        }
+        return formatMoneyGeneric(cents);
+    }
+
+    function renderPriceForVariant(variant, product) {
+        const priceHTML = [];
+        if (variant) {
+        priceHTML.push(`<span class="price">${formatMoney(variant.price)}</span>`);
+        // Some themes have compare_at_price for variants; fallback to product-level if needed
+        const compare = variant.compare_at_price || product?.compare_at_price;
+        if (compare && toCents(compare) > toCents(variant.price)) {
+            priceHTML.push(`<span class="compare">${formatMoney(compare)}</span>`);
+        }
+        }
+        priceEl.innerHTML = priceHTML.join('');
+    }
+
+    function renderOptionsUI(product) {
+        const modalRoot = document.getElementById('quick-add-modal');
+        const optWrap = modalRoot.querySelector('.qa-options'); // scope to modal
+        if (!optWrap) return;
+        optWrap.innerHTML = '';
+
+        const variants = product.variants || [];
+        if (!variants.length) return;
+
+        // build option meta (names + values)
+        const rawNames = Array.isArray(product.options) ? product.options : [];
+        const options = [1,2,3].map(i => ({
+            idx: i,
+            name: rawNames[i-1] || `Option ${i}`,
+            values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
+        })).filter(o => o.values.length);
+
+        // smarter detection of Color / Size
+        const COLOR_WORDS = /(colou?r|farbe|kleur)/i;
+        const SIZE_WORDS  = /(size|talla|größe|maat)/i;
+        const looksLikeColor = vals => vals.some(v => /(black|white|blue|navy|red|green|yellow|purple|pink|grey|gray|beige|brown|orange|silver|gold|#|rgb)/i.test(v));
+        const looksLikeSize  = vals => vals.some(v => /^(xxs|xs|s|m|l|xl|xxl|2xl|3xl|[0-9]{2}|[0-9]+(cm|in|us|uk|eu)?)$/i.test(String(v).replace(/\s/g,'')));
+
+        let color = options.find(o => COLOR_WORDS.test(o.name)) || options.find(o => looksLikeColor(o.values));
+        let size  = options.find(o => SIZE_WORDS.test(o.name))  || options.find(o => looksLikeSize(o.values) && o !== color);
+
+        // fallback if still missing
+        if (!color && options[0]) color = options[0];
+        if (!size && options[1])  size  = options[1] === color ? options[0] : options[1];
+
+        const hiddenVariant = modalRoot.querySelector('#qa-variant');
+
+        const anyAvail = filter => variants.some(v => Object.keys(filter).every(k => v[k] === filter[k]) && v.available);
+        const idFor = (prefix, val) => `${prefix}-${String(val).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
+        const colorToHex = (name) => {
+            const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316',beige:'#F5F5DC',brown:'#8B4513',pink:'#EC4899',silver:'#C0C0C0',gold:'#D4AF37'};
+            const s=String(name||'').toLowerCase();
+            const m=s.match(/#([0-9a-f]{3,8})/i); if (m) return m[0];
+            if (/^rgb/.test(s)) return s;
+            const key=Object.keys(map).find(k=>s.includes(k));
+            return key?map[key]:'#111';
+        };
+
+        function currentSelection() {
+            const sel = {};
+            if (color) {
+            const radio = optWrap.querySelector('input[name="qa-color"]:checked');
+            sel[`option${color.idx}`] = radio ? radio.value : optWrap.querySelector('#qa-color')?.value || '';
+            }
+            if (size) {
+            sel[`option${size.idx}`] = optWrap.querySelector('#qa-size')?.value || '';
+            }
+            return sel;
+        }
+        function pickVariant() {
+            const sel = currentSelection();
+            const candidates = variants.filter(v => Object.entries(sel).every(([k,val]) => !val || v[k] === val));
+            return candidates.find(v => v.available) || candidates[0] || variants[0];
+        }
+        function sync() {
+            const v = pickVariant();
+            if (hiddenVariant && v) hiddenVariant.value = String(v.id);
+            renderPriceForVariant(v, product);
+        }
+
+        // build Color UI
+        if (color) {
+            const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
+            fs.innerHTML = `<legend>${color.name.name}</legend>`;
+            if (color.values.length <= 3) {
+            const seg = document.createElement('div'); seg.className='qa-segmented';
+            color.values.forEach((val,i) => {
+                const ok = anyAvail({[`option${color.idx}`]: val});
+                const id = idFor('qa-color', val);
+                seg.insertAdjacentHTML('beforeend',
+                `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
+                <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
+            });
+            fs.appendChild(seg);
+            } else {
+            const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
+            const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
+            sel.appendChild(new Option('Choose a color',''));
+            color.values.forEach(val => {
+                const o = new Option(val, val);
+                if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true;
+                sel.appendChild(o);
+            });
+            wrap.appendChild(sel); fs.appendChild(wrap);
+            }
+            optWrap.appendChild(fs);
+        }
+
+        // build Size UI (styled select)
+        if (size) {
+            const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
+            fs.innerHTML = `<legend>${size.name.name}</legend>`;
+            const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
+            const sel = document.createElement('select'); sel.id='qa-size'; sel.setAttribute('aria-label','Size');
+            sel.appendChild(new Option('Choose your size',''));
+            size.values.forEach(val => {
+            const o = new Option(val, val);
+            if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
+            sel.appendChild(o);
+            });
+            wrap.appendChild(sel); fs.appendChild(wrap); optWrap.appendChild(fs);
+        }
+
+        // defaults for selects
+        ['#qa-color','#qa-size'].forEach(id => {
+            const el = optWrap.querySelector(id);
+            if (el && !el.value) {
+            const first = Array.from(el.options).find(o => o.value && !o.disabled);
+            if (first) el.value = first.value;
+            }
+        });
+
+        optWrap.querySelectorAll('input[name="qa-color"]').forEach(i => i.addEventListener('change', sync));
+        optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
+        optWrap.querySelector('#qa-size')?.addEventListener('change', sync);
+
+        sync();
+        }
+
+    function populateModal(product) {
+        titleEl.textContent = product.title || '';
+        descriptionEl.innerHTML = product.description || '';
+        viewLink.href = `/products/${product.handle}`;
+
+        // image
+        const firstImg =
+        (product.images && product.images[0] && (product.images[0].src || product.images[0])) ||
+        product.featured_image ||
+        product.image;
+        imgEl.src = firstImg ? addWidthParam(firstImg, 900) : '';
+        imgEl.alt = product.title || '';
+
+        // variants
+        variantSelect.innerHTML = '';
+        const variants = product.variants || [];
+        console.log(product.variants);
+        variants.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
+        opt.dataset.price = v.price;
+        opt.dataset.compare = v.compare_at_price || '';
+        variantSelect.appendChild(opt);
+        });
+
+        const defaultVariant =
+        variants.find(v => v.available) || variants[0] || null;
+
+        
+        if (defaultVariant) variantSelect.value = String(defaultVariant.id);
+            renderPriceForVariant(defaultVariant, product);
+            renderOptionsUI(product);  
+            openModal();
+    }
 
 
-  // update price on variant change
-  variantSelect.addEventListener('change', function() {
-    const selected = Array.from(this.options).find(o => o.selected);
-    if (!selected) return;
-    const variant = {
-      id: selected.value,
-      price: selected.dataset.price,
-      compare_at_price: selected.dataset.compare
-    };
-    renderPriceForVariant(variant);
-  });
+    // update price on variant change
+    variantSelect.addEventListener('change', function() {
+        const selected = Array.from(this.options).find(o => o.selected);
+        if (!selected) return;
+        const variant = {
+        id: selected.value,
+        price: selected.dataset.price,
+        compare_at_price: selected.dataset.compare
+        };
+        renderPriceForVariant(variant);
+    });
 
-  // close actions (backdrop, button, Esc)
-  modal.addEventListener('click', function(e) {
-    if (e.target.closest('[data-close-modal]')) closeModal();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
-  });
+    // close actions (backdrop, button, Esc)
+    modal.addEventListener('click', function(e) {
+        if (e.target.closest('[data-close-modal]')) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+    });
 
-  // ===== Plus icon click (event delegation) =====
-  document.addEventListener('click', function(e) {
-    const plusIcon = e.target.closest('.plus-icon');
-    if (!plusIcon) return;
+    // ===== Plus icon click (event delegation) =====
+    document.addEventListener('click', function(e) {
+        const plusIcon = e.target.closest('.plus-icon');
+        if (!plusIcon) return;
 
-    e.preventDefault();
-    const productHandle = plusIcon.getAttribute('data-product-handle');
-    if (!productHandle) return;
+        e.preventDefault();
+        const productHandle = plusIcon.getAttribute('data-product-handle');
+        if (!productHandle) return;
 
-    fetch(`/products/${productHandle}.js`, { credentials: 'same-origin' })
-      .then(res => {
-        if (!res.ok) throw new Error('Product not found');
-        return res.json();
-      })
-      .then(product => {
-        populateModal(product);
-      })
-      .catch(err => {
-        console.error('Error loading product:', err);
-      });
-  });
+        fetch(`/products/${productHandle}.js`, { credentials: 'same-origin' })
+        .then(res => {
+            if (!res.ok) throw new Error('Product not found');
+            return res.json();
+        })
+        .then(product => {
+            populateModal(product);
+        })
+        .catch(err => {
+            console.error('Error loading product:', err);
+        });
+    });
 })();
 </script>
 {% schema %}
