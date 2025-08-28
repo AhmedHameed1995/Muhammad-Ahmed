@@ -274,22 +274,22 @@
         const lg = document.createElement('legend'); lg.textContent = color.name; fs.appendChild(lg);
 
         if (color.values.length <= 3) {
-        const seg = document.createElement('div'); seg.className='qa-segmented'; seg.dataset.role='color-radios';
-        color.values.forEach((val,idx)=>{
-            const id = 'qa-color-'+val.toLowerCase().replace(/\W+/g,'-');
-            const input = document.createElement('input'); input.type='radio'; input.className='sr-only'; input.name='qa-color'; input.id=id; input.value=val;
-            const ok = anyAvail({[`option${color.i}`]: val}); if(!ok) input.disabled = true;
-            const lab = document.createElement('label'); lab.className='seg-btn'; lab.htmlFor=id; lab.textContent=val; lab.style.setProperty('--swatch', colorToHex(val));
-            if(!ok) lab.dataset.soldout='true'; if(idx===0 && ok) input.checked = true;
-            seg.append(input, lab);
-        });
-        fs.appendChild(seg);
+            const seg = document.createElement('div'); seg.className='qa-segmented'; seg.dataset.role='color-radios';
+            color.values.forEach((val,idx)=>{
+                const id = 'qa-color-'+val.toLowerCase().replace(/\W+/g,'-');
+                const input = document.createElement('input'); input.type='radio'; input.className='sr-only'; input.name='qa-color'; input.id=id; input.value=val;
+                const ok = anyAvail({[`option${color.i}`]: val}); if(!ok) input.disabled = true;
+                const lab = document.createElement('label'); lab.className='seg-btn'; lab.htmlFor=id; lab.textContent=val; lab.style.setProperty('--swatch', colorToHex(val));
+                if(!ok) lab.dataset.soldout='true'; if(idx===0 && ok) input.checked = true;
+                seg.append(input, lab);
+            });
+            fs.appendChild(seg);
         } else {
-        const wrap = document.createElement('div'); wrap.className='qa-select-wrap'; wrap.dataset.role='color-select';
-        const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
-        sel.append(new Option('Choose a color',''));
-        color.values.forEach(val=>{ const o=new Option(val,val); if(!anyAvail({[`option${color.i}`]:val})) o.disabled=true; sel.append(o); });
-        wrap.appendChild(sel); fs.appendChild(wrap);
+            const wrap = document.createElement('div'); wrap.className='qa-select-wrap'; wrap.dataset.role='color-select';
+            const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
+            sel.append(new Option('Choose a color',''));
+            color.values.forEach(val=>{ const o=new Option(val,val); if(!anyAvail({[`option${color.i}`]:val})) o.disabled=true; sel.append(o); });
+            wrap.appendChild(sel); fs.appendChild(wrap);
         }
         optWrap.appendChild(fs);
     }
