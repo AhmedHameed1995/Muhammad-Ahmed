@@ -335,407 +335,407 @@
     }
 
     async function refreshCartBubble(){
-    try{
-        const res = await fetch('/cart.js', { headers:{'Accept':'application/json'} });
-        const cart = await res.json();
-        const count = cart.item_count || 0;
+        try{
+            const res = await fetch('/cart.js', { headers:{'Accept':'application/json'} });
+            const cart = await res.json();
+            const count = cart.item_count || 0;
 
-        const candidates = [
-            document.querySelector('#cart-icon-bubble .cart-count-bubble .text'),
-            document.querySelector('.cart-count-bubble .text'),
-            document.querySelector('[data-cart-count]'),
-            document.querySelector('.header__icon--cart .cart-count'),
-            document.querySelector('.cart-count-bubble')
-        ].filter(Boolean);
+            const candidates = [
+                document.querySelector('#cart-icon-bubble .cart-count-bubble .text'),
+                document.querySelector('.cart-count-bubble .text'),
+                document.querySelector('[data-cart-count]'),
+                document.querySelector('.header__icon--cart .cart-count'),
+                document.querySelector('.cart-count-bubble')
+            ].filter(Boolean);
 
-        candidates.forEach(el=>{
-        // support multiple theme structures
-        if (el.hasAttribute?.('data-cart-count')){
-            el.setAttribute('data-cart-count', count);
-            el.classList.add('pop');
-            el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
-        } else if (el.classList.contains('text')){
-            el.textContent = count;
-            const wrap = el.closest('.cart-count-bubble');
-            if (wrap){ wrap.classList.toggle('hidden', count===0); wrap.classList.add('pop');
-            wrap.addEventListener('animationend',()=>wrap.classList.remove('pop'),{once:true});
-            }
-        } else {
-            el.textContent = count;
-            el.classList.add('pop');
-            el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
-        }
-        });
-
-        document.dispatchEvent(new CustomEvent('cart:refresh',{detail:cart}));
-    }catch(e){ console.error('Bubble refresh failed', e); }
-    }
-
-    // helpers
-    function openModal() {
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-        // prevent body scroll
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.overflow = 'hidden';
-        // focus close for accessibility
-        modal.querySelector('.qa-close').focus();
-    }
-
-    function closeModal() {
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-        document.documentElement.style.overflow = '';
-        document.body.style.overflow = '';
-    }
-
-    function addWidthParam(url, width) {
-        if (!url) return '';
-        try {
-        const u = new URL(url);
-        if (!u.searchParams.get('width')) u.searchParams.set('width', String(width));
-        return u.toString();
-        } catch(_) {
-        // fallback if relative URL
-        const joiner = url.includes('?') ? '&' : '?';
-        return url + joiner + 'width=' + width;
-        }
-    }
-    
-    function toCents(val) {
-        const s = String(val ?? '');
-        const n = Number(s.replace(/[^\d.]/g, ''));
-        if (!isFinite(n)) return 0;
-        return s.includes('.') ? Math.round(n * 100) : Math.round(n);
-    }
-
-    function formatMoneyGeneric(cents) {
-        const currency = (window.Shopify && Shopify.currency && Shopify.currency.active) || 'USD';
-        const locale = (window.Shopify && Shopify.locale) || navigator.language || 'en-US';
-        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
-    }
-
-    function formatMoney(value) {
-        const cents = toCents(value);
-        if (window.Shopify && typeof Shopify.formatMoney === 'function') {
-        // Using Shopify's own formatter if available
-        return Shopify.formatMoney(cents);
-        }
-        return formatMoneyGeneric(cents);
-    }
-
-    function renderPriceForVariant(variant, product) {
-        const priceHTML = [];
-        if (variant) {
-        priceHTML.push(`<span class="price">${formatMoney(variant.price)}</span>`);
-        // Some themes have compare_at_price for variants; fallback to product-level if needed
-        const compare = variant.compare_at_price || product?.compare_at_price;
-        if (compare && toCents(compare) > toCents(variant.price)) {
-            priceHTML.push(`<span class="compare">${formatMoney(compare)}</span>`);
-        }
-        }
-        priceEl.innerHTML = priceHTML.join('');
-    }
-
-    function renderOptionsUI(product) {
-        const modalRoot = document.getElementById('quick-add-modal');
-        const optWrap = modalRoot.querySelector('.qa-options');
-        if (!optWrap) return;
-        optWrap.innerHTML = '';
-
-        const variants = product.variants || [];
-        if (!variants.length) return;
-
-        const rawNames = Array.isArray(product.options) ? product.options : [];
-        const options = [1,2,3].map(i => ({
-            idx: i,
-            name: rawNames[i-1] || `Option ${i}`,
-            values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
-        })).filter(o => o.values.length);
-
-        // detect Color/Size (robust)
-        const COLOR_WORDS = /(colou?r|farbe|kleur)/i;
-        const SIZE_WORDS  = /(size|talla|größe|maat)/i;
-        const looksLikeColor = vals => vals.some(v => /(black|white|blue|navy|red|green|yellow|purple|pink|grey|gray|beige|brown|orange|silver|gold|#|rgb)/i.test(v));
-        const looksLikeSize  = vals => vals.some(v => /^(xxs|xs|s|m|l|xl|xxl|2xl|3xl|[0-9]{2}|[0-9]+(cm|in|us|uk|eu)?)$/i.test(String(v).replace(/\s/g,'')));
-        let color = options.find(o => COLOR_WORDS.test(o.name)) || options.find(o => looksLikeColor(o.values));
-        let size  = options.find(o => SIZE_WORDS.test(o.name))  || options.find(o => looksLikeSize(o.values) && o !== color);
-        if (!color && options[0]) color = options[0];
-        if (!size && options[1])  size  = options[1] === color ? options[0] : options[1];
-
-        const hiddenVariant = modalRoot.querySelector('#qa-variant');
-        const anyAvail = filter => variants.some(v => Object.keys(filter).every(k => v[k] === filter[k]) && v.available);
-        const idFor = (prefix, val) => `${prefix}-${String(val).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
-        const colorToHex = name => {
-            const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316',beige:'#F5F5DC',brown:'#8B4513',pink:'#EC4899',silver:'#C0C0C0',gold:'#D4AF37'};
-            const s=String(name||'').toLowerCase(); const m=s.match(/#([0-9a-f]{3,8})/i); if (m) return m[0];
-            if (/^rgb/.test(s)) return s; const k=Object.keys(map).find(x=>s.includes(x)); return k?map[k]:'#111';
-        };
-
-        // ---------- helpers that depend on UI ----------
-        let sizeHiddenSelect = null, sizeList = null, sizeSetValue = null;
-
-        function currentSelection() {
-            const sel = {};
-            if (color) {
-            const radio = optWrap.querySelector('input[name="qa-color"]:checked');
-            sel[`option${color.idx}`] = radio ? radio.value : optWrap.querySelector('#qa-color')?.value || '';
-            }
-            if (size) {
-            sel[`option${size.idx}`] = sizeHiddenSelect?.value || '';
-            }
-            return sel;
-        }
-
-        function pickVariant() {
-            const sel = currentSelection();
-            const candidates = variants.filter(v => Object.entries(sel).every(([k,val]) => !val || v[k] === val));
-            return candidates.find(v => v.available) || candidates[0] || variants[0];
-        }
-
-        function updateSizeAvailability() {
-            if (!size || !sizeList) return;
-            const sel = currentSelection();
-            const colorVal = color ? sel[`option${color.idx}`] : null;
-            sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
-            const f = { [`option${size.idx}`]: li.dataset.value };
-            if (color && colorVal) f[`option${color.idx}`] = colorVal;
-            const ok = anyAvail(f);
-            li.setAttribute('aria-disabled', ok ? 'false' : 'true');
-            // if current selection became invalid, move to first available
-            if (!ok && sizeHiddenSelect?.value === li.dataset.value) {
-                const first = [...sizeList.querySelectorAll('.qa-dd-option')].find(x => x.getAttribute('aria-disabled') === 'false');
-                if (first) sizeSetValue(first.dataset.value);
-            }
-            });
-        }
-
-        function sync() {
-            updateSizeAvailability();
-            const v = pickVariant();
-            if (hiddenVariant && v) hiddenVariant.value = String(v.id);
-            renderPriceForVariant(v, product);
-        }
-
-        // ---------- COLOR UI ----------
-        if (color) {
-            const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
-            fs.innerHTML = `<legend>${color.name ? color.name.name : ''}</legend>`;
-            if (color.values.length <= 3) {
-            const seg = document.createElement('div'); seg.className='qa-segmented';
-            color.values.forEach((val,i) => {
-                const ok = anyAvail({[`option${color.idx}`]: val});
-                const id = idFor('qa-color', val);
-                seg.insertAdjacentHTML('beforeend',
-                `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
-                <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
-            });
-            fs.appendChild(seg);
+            candidates.forEach(el=>{
+            // support multiple theme structures
+            if (el.hasAttribute?.('data-cart-count')){
+                el.setAttribute('data-cart-count', count);
+                el.classList.add('pop');
+                el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
+            } else if (el.classList.contains('text')){
+                el.textContent = count;
+                const wrap = el.closest('.cart-count-bubble');
+                if (wrap){ wrap.classList.toggle('hidden', count===0); wrap.classList.add('pop');
+                wrap.addEventListener('animationend',()=>wrap.classList.remove('pop'),{once:true});
+                }
             } else {
-            const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
-            const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
-            sel.appendChild(new Option('Choose a color',''));
-            color.values.forEach(val => {
-                const o = new Option(val, val); if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true; sel.appendChild(o);
-            });
-            wrap.appendChild(sel); fs.appendChild(wrap);
+                el.textContent = count;
+                el.classList.add('pop');
+                el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
             }
-            optWrap.appendChild(fs);
+            });
+
+            document.dispatchEvent(new CustomEvent('cart:refresh',{detail:cart}));
+        }catch(e){ console.error('Bubble refresh failed', e); }
         }
 
-        // ---------- SIZE UI (custom dropdown + hidden select) ----------
-        if (size) {
-            const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
-            fs.innerHTML = `<legend>${size.name ? size.name.name : ''}</legend>`;
+        // helpers
+        function openModal() {
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            // prevent body scroll
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            // focus close for accessibility
+            modal.querySelector('.qa-close').focus();
+        }
 
-            // hidden native select (for form semantics)
-            sizeHiddenSelect = document.createElement('select');
-            sizeHiddenSelect.id = 'qa-size';
-            sizeHiddenSelect.className = 'sr-only';
-            sizeHiddenSelect.setAttribute('aria-hidden','true');
-            sizeHiddenSelect.appendChild(new Option('',''));
-            size.values.forEach(val => {
-            const o = new Option(val, val);
-            if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
-            sizeHiddenSelect.appendChild(o);
-            });
+        function closeModal() {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+        }
 
-            // visible custom dropdown
-            const dd = document.createElement('div'); dd.className = 'qa-dropdown';
-            dd.innerHTML = `
-            <button type="button" class="qa-dd-button" aria-haspopup="listbox" aria-expanded="false">
-                <span class="qa-dd-label">Choose your size</span>
-            </button>
-            <ul class="qa-dd-list" role="listbox" tabindex="-1"></ul>
-            `;
-            sizeList = dd.querySelector('.qa-dd-list');
-            const btn = dd.querySelector('.qa-dd-button');
-            const label = dd.querySelector('.qa-dd-label');
+        function addWidthParam(url, width) {
+            if (!url) return '';
+            try {
+                const u = new URL(url);
+            if (!u.searchParams.get('width')) u.searchParams.set('width', String(width));
+                return u.toString();
+            } catch(_) {
+                // fallback if relative URL
+                const joiner = url.includes('?') ? '&' : '?';
+                return url + joiner + 'width=' + width;
+            }
+        }
+        
+        function toCents(val) {
+            const s = String(val ?? '');
+            const n = Number(s.replace(/[^\d.]/g, ''));
+            if (!isFinite(n)) return 0;
+            return s.includes('.') ? Math.round(n * 100) : Math.round(n);
+        }
 
-            // populate list
-            size.values.forEach(val => {
-            const li = document.createElement('li');
-            li.className = 'qa-dd-option';
-            li.setAttribute('role','option');
-            li.dataset.value = val;
-            const ok = anyAvail({[`option${size.idx}`]: val});
-            li.setAttribute('aria-disabled', ok ? 'false' : 'true');
-            li.textContent = val;
-            sizeList.appendChild(li);
-            });
+        function formatMoneyGeneric(cents) {
+            const currency = (window.Shopify && Shopify.currency && Shopify.currency.active) || 'USD';
+            const locale = (window.Shopify && Shopify.locale) || navigator.language || 'en-US';
+            return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
+        }
 
-            fs.appendChild(sizeHiddenSelect);
-            fs.appendChild(dd);
-            optWrap.appendChild(fs);
+        function formatMoney(value) {
+            const cents = toCents(value);
+            if (window.Shopify && typeof Shopify.formatMoney === 'function') {
+                // Using Shopify's own formatter if available
+                return Shopify.formatMoney(cents);
+            }
+            return formatMoneyGeneric(cents);
+        }
 
-            // select setter
-            sizeSetValue = function(val) {
-            sizeHiddenSelect.value = val || '';
-            label.textContent = val || 'Choose your size';
-            sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
-                li.setAttribute('aria-selected', li.dataset.value === val ? 'true' : 'false');
-            });
-            sync();
+        function renderPriceForVariant(variant, product) {
+            const priceHTML = [];
+            if (variant) {
+                priceHTML.push(`<span class="price">${formatMoney(variant.price)}</span>`);
+                // Some themes have compare_at_price for variants; fallback to product-level if needed
+                const compare = variant.compare_at_price || product?.compare_at_price;
+                if (compare && toCents(compare) > toCents(variant.price)) {
+                    priceHTML.push(`<span class="compare">${formatMoney(compare)}</span>`);
+                }
+            }
+            priceEl.innerHTML = priceHTML.join('');
+        }
+
+        function renderOptionsUI(product) {
+            const modalRoot = document.getElementById('quick-add-modal');
+            const optWrap = modalRoot.querySelector('.qa-options');
+            if (!optWrap) return;
+            optWrap.innerHTML = '';
+
+            const variants = product.variants || [];
+            if (!variants.length) return;
+
+            const rawNames = Array.isArray(product.options) ? product.options : [];
+            const options = [1,2,3].map(i => ({
+                idx: i,
+                name: rawNames[i-1] || `Option ${i}`,
+                values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
+            })).filter(o => o.values.length);
+
+            // detect Color/Size (robust)
+            const COLOR_WORDS = /(colou?r|farbe|kleur)/i;
+            const SIZE_WORDS  = /(size|talla|größe|maat)/i;
+            const looksLikeColor = vals => vals.some(v => /(black|white|blue|navy|red|green|yellow|purple|pink|grey|gray|beige|brown|orange|silver|gold|#|rgb)/i.test(v));
+            const looksLikeSize  = vals => vals.some(v => /^(xxs|xs|s|m|l|xl|xxl|2xl|3xl|[0-9]{2}|[0-9]+(cm|in|us|uk|eu)?)$/i.test(String(v).replace(/\s/g,'')));
+            let color = options.find(o => COLOR_WORDS.test(o.name)) || options.find(o => looksLikeColor(o.values));
+            let size  = options.find(o => SIZE_WORDS.test(o.name))  || options.find(o => looksLikeSize(o.values) && o !== color);
+            if (!color && options[0]) color = options[0];
+            if (!size && options[1])  size  = options[1] === color ? options[0] : options[1];
+
+            const hiddenVariant = modalRoot.querySelector('#qa-variant');
+            const anyAvail = filter => variants.some(v => Object.keys(filter).every(k => v[k] === filter[k]) && v.available);
+            const idFor = (prefix, val) => `${prefix}-${String(val).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
+            const colorToHex = name => {
+                const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316',beige:'#F5F5DC',brown:'#8B4513',pink:'#EC4899',silver:'#C0C0C0',gold:'#D4AF37'};
+                const s=String(name||'').toLowerCase(); const m=s.match(/#([0-9a-f]{3,8})/i); if (m) return m[0];
+                if (/^rgb/.test(s)) return s; const k=Object.keys(map).find(x=>s.includes(x)); return k?map[k]:'#111';
             };
 
-            // default to first enabled size
-            const firstEnabled = [...sizeList.querySelectorAll('.qa-dd-option')]
-            .find(li => li.getAttribute('aria-disabled') === 'false');
-            if (firstEnabled) sizeSetValue(firstEnabled.dataset.value);
+            // ---------- helpers that depend on UI ----------
+            let sizeHiddenSelect = null, sizeList = null, sizeSetValue = null;
 
-            // interactions
-            btn.addEventListener('click', () => {
-            const isOpen = dd.classList.toggle('open');
-            btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            if (isOpen) sizeList.focus({preventScroll:true});
-            });
-            document.addEventListener('click', (ev) => {
-            if (!dd.contains(ev.target)) {
+            function currentSelection() {
+                const sel = {};
+                if (color) {
+                    const radio = optWrap.querySelector('input[name="qa-color"]:checked');
+                    sel[`option${color.idx}`] = radio ? radio.value : optWrap.querySelector('#qa-color')?.value || '';
+                }
+                if (size) {
+                    sel[`option${size.idx}`] = sizeHiddenSelect?.value || '';
+                }
+                return sel;
+            }
+
+            function pickVariant() {
+                const sel = currentSelection();
+                const candidates = variants.filter(v => Object.entries(sel).every(([k,val]) => !val || v[k] === val));
+                return candidates.find(v => v.available) || candidates[0] || variants[0];
+            }
+
+            function updateSizeAvailability() {
+                if (!size || !sizeList) return;
+                const sel = currentSelection();
+                const colorVal = color ? sel[`option${color.idx}`] : null;
+                sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
+                const f = { [`option${size.idx}`]: li.dataset.value };
+                if (color && colorVal) f[`option${color.idx}`] = colorVal;
+                const ok = anyAvail(f);
+                li.setAttribute('aria-disabled', ok ? 'false' : 'true');
+                // if current selection became invalid, move to first available
+                if (!ok && sizeHiddenSelect?.value === li.dataset.value) {
+                    const first = [...sizeList.querySelectorAll('.qa-dd-option')].find(x => x.getAttribute('aria-disabled') === 'false');
+                    if (first) sizeSetValue(first.dataset.value);
+                }
+                });
+            }
+
+            function sync() {
+                updateSizeAvailability();
+                const v = pickVariant();
+                if (hiddenVariant && v) hiddenVariant.value = String(v.id);
+                renderPriceForVariant(v, product);
+            }
+
+            // ---------- COLOR UI ----------
+            if (color) {
+                const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
+                fs.innerHTML = `<legend>${color.name ? color.name.name : ''}</legend>`;
+                if (color.values.length <= 3) {
+                const seg = document.createElement('div'); seg.className='qa-segmented';
+                color.values.forEach((val,i) => {
+                    const ok = anyAvail({[`option${color.idx}`]: val});
+                    const id = idFor('qa-color', val);
+                    seg.insertAdjacentHTML('beforeend',
+                    `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
+                    <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
+                });
+                fs.appendChild(seg);
+                } else {
+                const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
+                const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
+                sel.appendChild(new Option('Choose a color',''));
+                color.values.forEach(val => {
+                    const o = new Option(val, val); if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true; sel.appendChild(o);
+                });
+                wrap.appendChild(sel); fs.appendChild(wrap);
+                }
+                optWrap.appendChild(fs);
+            }
+
+            // ---------- SIZE UI (custom dropdown + hidden select) ----------
+            if (size) {
+                const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
+                fs.innerHTML = `<legend>${size.name ? size.name.name : ''}</legend>`;
+
+                // hidden native select (for form semantics)
+                sizeHiddenSelect = document.createElement('select');
+                sizeHiddenSelect.id = 'qa-size';
+                sizeHiddenSelect.className = 'sr-only';
+                sizeHiddenSelect.setAttribute('aria-hidden','true');
+                sizeHiddenSelect.appendChild(new Option('',''));
+                size.values.forEach(val => {
+                const o = new Option(val, val);
+                if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
+                sizeHiddenSelect.appendChild(o);
+                });
+
+                // visible custom dropdown
+                const dd = document.createElement('div'); dd.className = 'qa-dropdown';
+                dd.innerHTML = `
+                <button type="button" class="qa-dd-button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="qa-dd-label">Choose your size</span>
+                </button>
+                <ul class="qa-dd-list" role="listbox" tabindex="-1"></ul>
+                `;
+                sizeList = dd.querySelector('.qa-dd-list');
+                const btn = dd.querySelector('.qa-dd-button');
+                const label = dd.querySelector('.qa-dd-label');
+
+                // populate list
+                size.values.forEach(val => {
+                const li = document.createElement('li');
+                li.className = 'qa-dd-option';
+                li.setAttribute('role','option');
+                li.dataset.value = val;
+                const ok = anyAvail({[`option${size.idx}`]: val});
+                li.setAttribute('aria-disabled', ok ? 'false' : 'true');
+                li.textContent = val;
+                sizeList.appendChild(li);
+                });
+
+                fs.appendChild(sizeHiddenSelect);
+                fs.appendChild(dd);
+                optWrap.appendChild(fs);
+
+                // select setter
+                sizeSetValue = function(val) {
+                sizeHiddenSelect.value = val || '';
+                label.textContent = val || 'Choose your size';
+                sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
+                    li.setAttribute('aria-selected', li.dataset.value === val ? 'true' : 'false');
+                });
+                sync();
+                };
+
+                // default to first enabled size
+                const firstEnabled = [...sizeList.querySelectorAll('.qa-dd-option')]
+                .find(li => li.getAttribute('aria-disabled') === 'false');
+                if (firstEnabled) sizeSetValue(firstEnabled.dataset.value);
+
+                // interactions
+                btn.addEventListener('click', () => {
+                const isOpen = dd.classList.toggle('open');
+                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                if (isOpen) sizeList.focus({preventScroll:true});
+                });
+                document.addEventListener('click', (ev) => {
+                if (!dd.contains(ev.target)) {
+                    dd.classList.remove('open'); 
+                    btn.setAttribute('aria-expanded','false');
+                }
+                });
+                sizeList.addEventListener('click', e => {
+                const li = e.target.closest('.qa-dd-option');
+                if (!li || li.getAttribute('aria-disabled') === 'true') return;
+                sizeSetValue(li.dataset.value);
                 dd.classList.remove('open'); 
                 btn.setAttribute('aria-expanded','false');
+                });
+                sizeList.addEventListener('keydown', e => {
+                const avail = [...sizeList.querySelectorAll('.qa-dd-option[aria-disabled="false"]')];
+                const cur = avail.findIndex(el => el.getAttribute('aria-selected') === 'true');
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const next = e.key === 'ArrowDown' ? Math.min(cur + 1, avail.length - 1) : Math.max(cur - 1, 0);
+                    avail[next]?.focus();
+                } else if (e.key === 'Enter') {
+                    const el = document.activeElement.closest('.qa-dd-option');
+                    if (el) { sizeSetValue(el.dataset.value); dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }
+                } else if (e.key === 'Escape') {
+                    dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus();
+                }
+                });
             }
+
+            // listeners for color changes (keep everything in sync)
+            optWrap.querySelectorAll('input[name="qa-color"]').forEach(i => i.addEventListener('change', sync));
+            optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
+
+            // defaults for plain selects (if any)
+            ['#qa-color'].forEach(id => {
+                const el = optWrap.querySelector(id);
+                if (el && !el.value) {
+                const first = Array.from(el.options).find(o => o.value && !o.disabled);
+                if (first) el.value = first.value;
+                }
             });
-            sizeList.addEventListener('click', e => {
-            const li = e.target.closest('.qa-dd-option');
-            if (!li || li.getAttribute('aria-disabled') === 'true') return;
-            sizeSetValue(li.dataset.value);
-            dd.classList.remove('open'); 
-            btn.setAttribute('aria-expanded','false');
-            });
-            sizeList.addEventListener('keydown', e => {
-            const avail = [...sizeList.querySelectorAll('.qa-dd-option[aria-disabled="false"]')];
-            const cur = avail.findIndex(el => el.getAttribute('aria-selected') === 'true');
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                e.preventDefault();
-                const next = e.key === 'ArrowDown' ? Math.min(cur + 1, avail.length - 1) : Math.max(cur - 1, 0);
-                avail[next]?.focus();
-            } else if (e.key === 'Enter') {
-                const el = document.activeElement.closest('.qa-dd-option');
-                if (el) { sizeSetValue(el.dataset.value); dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }
-            } else if (e.key === 'Escape') {
-                dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus();
-            }
-            });
+
+            sync();
         }
 
-        // listeners for color changes (keep everything in sync)
-        optWrap.querySelectorAll('input[name="qa-color"]').forEach(i => i.addEventListener('change', sync));
-        optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
+        function populateModal(product) {
+            currentProduct = product; 
 
-        // defaults for plain selects (if any)
-        ['#qa-color'].forEach(id => {
-            const el = optWrap.querySelector(id);
-            if (el && !el.value) {
-            const first = Array.from(el.options).find(o => o.value && !o.disabled);
-            if (first) el.value = first.value;
-            }
+            titleEl.textContent = product.title || '';
+            descriptionEl.innerHTML = product.description || '';
+            imgEl.src = "";
+            // image
+            const firstImg =
+            (product.images && product.images[0] && (product.images[0].src || product.images[0])) ||
+            product.featured_image ||
+            product.image;
+            imgEl.src = firstImg ? addWidthParam(firstImg, 900) : '';
+            imgEl.alt = product.title || '';
+
+            // variants
+            variantSelect.innerHTML = '';
+            const variants = product.variants || [];
+            console.log(product.variants);
+            variants.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
+            opt.dataset.price = v.price;
+            opt.dataset.compare = v.compare_at_price || '';
+            variantSelect.appendChild(opt);
+            });
+
+            const defaultVariant =
+            variants.find(v => v.available) || variants[0] || null;
+
+            
+            if (defaultVariant) variantSelect.value = String(defaultVariant.id);
+                renderPriceForVariant(defaultVariant, product);
+                renderOptionsUI(product);  
+                openModal();
+                setATCState();
+        }
+
+
+        // update price on variant change
+        variantSelect.addEventListener('change', function() {
+            const selected = Array.from(this.options).find(o => o.selected);
+            if (!selected) return;
+            const variant = {
+            id: selected.value,
+            price: selected.dataset.price,
+            compare_at_price: selected.dataset.compare
+            };
+            renderPriceForVariant(variant);
         });
 
-        sync();
-    }
-
-    function populateModal(product) {
-        currentProduct = product; 
-
-        titleEl.textContent = product.title || '';
-        descriptionEl.innerHTML = product.description || '';
-        imgEl.src = "";
-        // image
-        const firstImg =
-        (product.images && product.images[0] && (product.images[0].src || product.images[0])) ||
-        product.featured_image ||
-        product.image;
-        imgEl.src = firstImg ? addWidthParam(firstImg, 900) : '';
-        imgEl.alt = product.title || '';
-
-        // variants
-        variantSelect.innerHTML = '';
-        const variants = product.variants || [];
-        console.log(product.variants);
-        variants.forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v.id;
-        opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
-        opt.dataset.price = v.price;
-        opt.dataset.compare = v.compare_at_price || '';
-        variantSelect.appendChild(opt);
+        // close actions (backdrop, button, Esc)
+        modal.addEventListener('click', function(e) {
+            if (e.target.closest('[data-close-modal]')) closeModal();
         });
-
-        const defaultVariant =
-        variants.find(v => v.available) || variants[0] || null;
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+        });
 
         
-        if (defaultVariant) variantSelect.value = String(defaultVariant.id);
-            renderPriceForVariant(defaultVariant, product);
-            renderOptionsUI(product);  
-            openModal();
-            setATCState();
-    }
+        // ===== Plus icon click (event delegation) =====
+        document.addEventListener('click', function(e) {
+            const plusIcon = e.target.closest('.plus-icon');
+            if (!plusIcon) return;
 
+            e.preventDefault();
+            const productHandle = plusIcon.getAttribute('data-product-handle');
+            if (!productHandle) return;
 
-    // update price on variant change
-    variantSelect.addEventListener('change', function() {
-        const selected = Array.from(this.options).find(o => o.selected);
-        if (!selected) return;
-        const variant = {
-        id: selected.value,
-        price: selected.dataset.price,
-        compare_at_price: selected.dataset.compare
-        };
-        renderPriceForVariant(variant);
-    });
-
-    // close actions (backdrop, button, Esc)
-    modal.addEventListener('click', function(e) {
-        if (e.target.closest('[data-close-modal]')) closeModal();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
-    });
-
-    
-    // ===== Plus icon click (event delegation) =====
-    document.addEventListener('click', function(e) {
-        const plusIcon = e.target.closest('.plus-icon');
-        if (!plusIcon) return;
-
-        e.preventDefault();
-        const productHandle = plusIcon.getAttribute('data-product-handle');
-        if (!productHandle) return;
-
-        fetch(`/products/${productHandle}.js`, { credentials: 'same-origin' })
-        .then(res => {
-            if (!res.ok) throw new Error('Product not found');
-            return res.json();
-        })
-        .then(product => {
-            populateModal(product);
-        })
-        .catch(err => {
-            console.error('Error loading product:', err);
+            fetch(`/products/${productHandle}.js`, { credentials: 'same-origin' })
+            .then(res => {
+                if (!res.ok) throw new Error('Product not found');
+                return res.json();
+            })
+            .then(product => {
+                populateModal(product);
+            })
+            .catch(err => {
+                console.error('Error loading product:', err);
+            });
         });
-    });
-})();
+    })();
 </script>
 {% schema %}
 {
