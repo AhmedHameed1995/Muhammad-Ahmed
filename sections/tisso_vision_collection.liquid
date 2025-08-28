@@ -1,6 +1,7 @@
 {%- if section.settings.collection.products.size > 0 -%}
     <div class="product_grid_wrapper">
         <div class="page-width container">
+            <h2>{{section.settings.heading}}</h2>
             {% paginate section.settings.collection.products by section.settings.products_to_show %}
                 {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
                     <div class="tissio_products">
