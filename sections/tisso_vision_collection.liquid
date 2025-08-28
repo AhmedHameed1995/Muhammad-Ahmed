@@ -334,7 +334,7 @@
         return res.json();
     }
 
-    async function refreshCartBubble(){
+    async function refreshCartBubble() {
         try{
             const res = await fetch('/cart.js', { headers:{'Accept':'application/json'} });
             const cart = await res.json();
