@@ -470,6 +470,7 @@
       })
       .then(product => {
         populateModal(product);
+        console.log(product);
       })
       .catch(err => {
         console.error('Error loading product:', err);
