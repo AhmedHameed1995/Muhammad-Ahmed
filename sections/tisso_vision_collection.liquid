@@ -351,18 +351,14 @@
 
     const defaultVariant =
       variants.find(v => v.available) || variants[0] || null;
-    if (defaultVariant) {
-      variantSelect.value = String(defaultVariant.id);
-    }
 
-    renderPriceForVariant(defaultVariant, product);
-    openModal();
+    
+    if (defaultVariant) variantSelect.value = String(defaultVariant.id);
+        renderPriceForVariant(defaultVariant, product);
+        renderOptionsUI(product);  // <— yeh call add karo
+        openModal();
   }
 
-  if (defaultVariant) variantSelect.value = String(defaultVariant.id);
-    renderPriceForVariant(defaultVariant, product);
-    renderOptionsUI(product);  // <— yeh call add karo
-    openModal();
 
   // update price on variant change
   variantSelect.addEventListener('change', function() {
