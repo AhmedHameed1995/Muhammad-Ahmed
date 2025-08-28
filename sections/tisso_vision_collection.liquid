@@ -555,33 +555,33 @@
                 sizeHiddenSelect.setAttribute('aria-hidden','true');
                 sizeHiddenSelect.appendChild(new Option('',''));
                 size.values.forEach(val => {
-                const o = new Option(val, val);
-                if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
-                    sizeHiddenSelect.appendChild(o);
-                });
+                    const o = new Option(val, val);
+                    if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
+                        sizeHiddenSelect.appendChild(o);
+                    });
 
-                // visible custom dropdown
-                const dd = document.createElement('div'); dd.className = 'qa-dropdown';
-                dd.innerHTML = `
-                <button type="button" class="qa-dd-button" aria-haspopup="listbox" aria-expanded="false">
-                    <span class="qa-dd-label">Choose your size</span>
-                </button>
-                <ul class="qa-dd-list" role="listbox" tabindex="-1"></ul>
-                `;
-                sizeList = dd.querySelector('.qa-dd-list');
-                const btn = dd.querySelector('.qa-dd-button');
-                const label = dd.querySelector('.qa-dd-label');
+                    // visible custom dropdown
+                    const dd = document.createElement('div'); dd.className = 'qa-dropdown';
+                    dd.innerHTML = `
+                    <button type="button" class="qa-dd-button" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="qa-dd-label">Choose your size</span>
+                    </button>
+                    <ul class="qa-dd-list" role="listbox" tabindex="-1"></ul>
+                    `;
+                    sizeList = dd.querySelector('.qa-dd-list');
+                    const btn = dd.querySelector('.qa-dd-button');
+                    const label = dd.querySelector('.qa-dd-label');
 
-                // populate list
-                size.values.forEach(val => {
-                const li = document.createElement('li');
-                li.className = 'qa-dd-option';
-                li.setAttribute('role','option');
-                li.dataset.value = val;
-                const ok = anyAvail({[`option${size.idx}`]: val});
-                li.setAttribute('aria-disabled', ok ? 'false' : 'true');
-                li.textContent = val;
-                sizeList.appendChild(li);
+                    // populate list
+                    size.values.forEach(val => {
+                    const li = document.createElement('li');
+                    li.className = 'qa-dd-option';
+                    li.setAttribute('role','option');
+                    li.dataset.value = val;
+                    const ok = anyAvail({[`option${size.idx}`]: val});
+                    li.setAttribute('aria-disabled', ok ? 'false' : 'true');
+                    li.textContent = val;
+                    sizeList.appendChild(li);
                 });
 
                 fs.appendChild(sizeHiddenSelect);
@@ -590,12 +590,12 @@
 
                 // select setter
                 sizeSetValue = function(val) {
-                sizeHiddenSelect.value = val || '';
-                label.textContent = val || 'Choose your size';
-                sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
-                    li.setAttribute('aria-selected', li.dataset.value === val ? 'true' : 'false');
-                });
-                sync();
+                    sizeHiddenSelect.value = val || '';
+                    label.textContent = val || 'Choose your size';
+                    sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
+                        li.setAttribute('aria-selected', li.dataset.value === val ? 'true' : 'false');
+                    });
+                    sync();
                 };
 
                 // default to first enabled size
