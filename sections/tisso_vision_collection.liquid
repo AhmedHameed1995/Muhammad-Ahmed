@@ -359,6 +359,11 @@
     openModal();
   }
 
+  if (defaultVariant) variantSelect.value = String(defaultVariant.id);
+    renderPriceForVariant(defaultVariant, product);
+    renderOptionsUI(product);  // <— yeh call add karo
+    openModal();
+
   // update price on variant change
   variantSelect.addEventListener('change', function() {
     const selected = Array.from(this.options).find(o => o.selected);
