@@ -304,6 +304,7 @@
     if (atcBtn) {
       atcBtn.addEventListener('click', async () => {
         const variant = getSelectedVariant(currentProduct);
+        
         if (!variant || !variant.id) return;
 
         atcBtn.disabled = true;
@@ -340,11 +341,11 @@
         const count = cart.item_count || 0;
 
         const candidates = [
-        document.querySelector('#cart-icon-bubble .cart-count-bubble .text'),
-        document.querySelector('.cart-count-bubble .text'),
-        document.querySelector('[data-cart-count]'),
-        document.querySelector('.header__icon--cart .cart-count'),
-        document.querySelector('.cart-count-bubble')
+            document.querySelector('#cart-icon-bubble .cart-count-bubble .text'),
+            document.querySelector('.cart-count-bubble .text'),
+            document.querySelector('[data-cart-count]'),
+            document.querySelector('.header__icon--cart .cart-count'),
+            document.querySelector('.cart-count-bubble')
         ].filter(Boolean);
 
         candidates.forEach(el=>{
