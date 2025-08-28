@@ -73,10 +73,19 @@
             "coordinate_top": "20",
             "coordinate_left": "80"
           }
+        },
+        "product_y664aj": {
+          "type": "product",
+          "settings": {
+            "product": "classic-leather-jacket",
+            "coordinate_top": "",
+            "coordinate_left": ""
+          }
         }
       },
       "block_order": [
-        "product_GqLmGq"
+        "product_GqLmGq",
+        "product_y664aj"
       ],
       "name": "Tisso Vision Collection",
       "settings": {
