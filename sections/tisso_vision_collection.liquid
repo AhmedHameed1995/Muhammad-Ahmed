@@ -12,7 +12,6 @@
                                 <img src="{{ product.featured_media | image_url:  width: 360, height: 360  }} 360w" width="" />
                             {% endif %}
                             <span class="plus-icon" data-product-handle="{{ product.handle }}">+</span>
-
                         </div>
                     </div>
                 {% endfor %}
@@ -79,6 +78,7 @@
             if (plusIcon) {
                 e.preventDefault();
                 const productHandle = plusIcon.getAttribute('data-product-handle');
+                console.log(productHandle);
             }
     });
 </script>
