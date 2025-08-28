@@ -90,10 +90,13 @@
                         if (!response.ok) {
                             throw new Error('Product not found');
                         }
-                        return response.json();
+                        //return response.json();
+                        console.log(response.json());
+
                     })
                     .then(product => {
                         // Format price
+                        console.log(product);
                     }).
                     .catch(error => {
                         console.error('Error loading product:', error);
