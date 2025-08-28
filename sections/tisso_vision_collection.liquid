@@ -605,36 +605,39 @@
 
                 // interactions
                 btn.addEventListener('click', () => {
-                const isOpen = dd.classList.toggle('open');
-                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                if (isOpen) sizeList.focus({preventScroll:true});
+                    const isOpen = dd.classList.toggle('open');
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen) sizeList.focus({preventScroll:true});
                 });
+
                 document.addEventListener('click', (ev) => {
-                if (!dd.contains(ev.target)) {
+                    if (!dd.contains(ev.target)) {
+                        dd.classList.remove('open'); 
+                        btn.setAttribute('aria-expanded','false');
+                    }
+                });
+
+                sizeList.addEventListener('click', e => {
+                    const li = e.target.closest('.qa-dd-option');
+                    if (!li || li.getAttribute('aria-disabled') === 'true') return;
+                    sizeSetValue(li.dataset.value);
                     dd.classList.remove('open'); 
                     btn.setAttribute('aria-expanded','false');
-                }
                 });
-                sizeList.addEventListener('click', e => {
-                const li = e.target.closest('.qa-dd-option');
-                if (!li || li.getAttribute('aria-disabled') === 'true') return;
-                sizeSetValue(li.dataset.value);
-                dd.classList.remove('open'); 
-                btn.setAttribute('aria-expanded','false');
-                });
+
                 sizeList.addEventListener('keydown', e => {
-                const avail = [...sizeList.querySelectorAll('.qa-dd-option[aria-disabled="false"]')];
-                const cur = avail.findIndex(el => el.getAttribute('aria-selected') === 'true');
-                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    const next = e.key === 'ArrowDown' ? Math.min(cur + 1, avail.length - 1) : Math.max(cur - 1, 0);
-                    avail[next]?.focus();
-                } else if (e.key === 'Enter') {
-                    const el = document.activeElement.closest('.qa-dd-option');
-                    if (el) { sizeSetValue(el.dataset.value); dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }
-                } else if (e.key === 'Escape') {
-                    dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus();
-                }
+                    const avail = [...sizeList.querySelectorAll('.qa-dd-option[aria-disabled="false"]')];
+                    const cur = avail.findIndex(el => el.getAttribute('aria-selected') === 'true');
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const next = e.key === 'ArrowDown' ? Math.min(cur + 1, avail.length - 1) : Math.max(cur - 1, 0);
+                        avail[next]?.focus();
+                    } else if (e.key === 'Enter') {
+                        const el = document.activeElement.closest('.qa-dd-option');
+                        if (el) { sizeSetValue(el.dataset.value); dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }
+                    } else if (e.key === 'Escape') {
+                        dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus();
+                    }
                 });
             }
 
@@ -671,14 +674,15 @@
             // variants
             variantSelect.innerHTML = '';
             const variants = product.variants || [];
+            
             console.log(product.variants);
             variants.forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v.id;
-            opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
-            opt.dataset.price = v.price;
-            opt.dataset.compare = v.compare_at_price || '';
-            variantSelect.appendChild(opt);
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
+                opt.dataset.price = v.price;
+                opt.dataset.compare = v.compare_at_price || '';
+                variantSelect.appendChild(opt);
             });
 
             const defaultVariant =
