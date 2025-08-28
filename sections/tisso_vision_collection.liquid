@@ -72,7 +72,16 @@
     border-radius: 50%;
 }
 </style>
-
+<script>
+     document.addEventListener('click', function(e) {
+            // Check if clicked element is plus icon or its child
+            const plusIcon = e.target.closest('.plus-icon');
+            if (plusIcon) {
+                e.preventDefault();
+                const productHandle = plusIcon.getAttribute('data-product-handle');
+            }
+    });
+</script>
 {% schema %}
 {
     "name": "Tisso Vision Collection",
