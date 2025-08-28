@@ -200,7 +200,7 @@
 
   function populateModal(product) {
     titleEl.textContent = product.title || '';
-    descriptionEl.textContent = product.description || '';
+    descriptionEl.innerHTML = product.description || '';
     viewLink.href = `/products/${product.handle}`;
 
     // image
