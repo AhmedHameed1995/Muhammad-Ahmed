@@ -696,7 +696,6 @@
                 setATCState();
         }
 
-
         // update price on variant change
         variantSelect.addEventListener('change', function() {
             const selected = Array.from(this.options).find(o => o.selected);
@@ -713,10 +712,10 @@
         modal.addEventListener('click', function(e) {
             if (e.target.closest('[data-close-modal]')) closeModal();
         });
+
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
         });
-
         
         // ===== Plus icon click (event delegation) =====
         document.addEventListener('click', function(e) {
@@ -739,7 +738,7 @@
                 console.error('Error loading product:', err);
             });
         });
-    })();
+})();
 </script>
 {% schema %}
 {
