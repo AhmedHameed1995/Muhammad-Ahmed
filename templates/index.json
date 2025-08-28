@@ -89,17 +89,44 @@
             "coordinate_top": "80",
             "coordinate_left": "250"
           }
+        },
+        "product_9f8bMk": {
+          "type": "product",
+          "settings": {
+            "product": "olive-green-jacket",
+            "coordinate_top": "",
+            "coordinate_left": ""
+          }
+        },
+        "product_bfbtge": {
+          "type": "product",
+          "settings": {
+            "product": "navy-sport-jacket",
+            "coordinate_top": "100",
+            "coordinate_left": "100"
+          }
+        },
+        "product_4BG4Pc": {
+          "type": "product",
+          "settings": {
+            "product": "silk-summer-top",
+            "coordinate_top": "200",
+            "coordinate_left": "90"
+          }
         }
       },
       "block_order": [
         "product_7JwyHz",
         "product_GqLmGq",
-        "product_y664aj"
+        "product_y664aj",
+        "product_9f8bMk",
+        "product_bfbtge",
+        "product_4BG4Pc"
       ],
       "name": "Tisso Vision Collection",
       "settings": {
         "heading": "Tisso Vision in the wild",
-        "products_to_show": 6
+        "products_to_show": 3
       }
     },
     "featured_collection": {
