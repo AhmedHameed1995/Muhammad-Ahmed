@@ -41,7 +41,13 @@
                     </div>
                     <div class="product_modal_wrap"> 
                         <div class="qa-info">
-                            <div class="qa-options"></div>
+                            <label class="qa-variant-wrap">
+                            <span>Variant</span>
+                            <select id="qa-variant"></select>
+                            </label>
+                            <div class="qa-actions">
+                            <a id="qa-view-link" class="qa-view-link" href="#">View product</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -252,199 +258,17 @@
     openModal();
   }
 
-  /* ==== build Color/Size UI into .qa-options (vanilla JS) ==== */
-    function renderOptionsUI(product) {
-    const variants = product.variants || [];
-    const qaInfo = document.querySelector('.qa-info');
-    let optWrap = document.querySelector('.qa-options');
-    if (!optWrap) {
-        optWrap = document.createElement('div');
-        optWrap.className = 'qa-options';
-        qaInfo.appendChild(optWrap);
-    }
-    optWrap.innerHTML = '';
-
-    // --- gather option names + values from variants ---
-    const optionNames = Array.isArray(product.options) ? product.options : [];
-    const options = [1,2,3].map(i => ({
-        index: i,
-        name: optionNames[i-1] || `Option ${i}`,
-        values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
-    })).filter(o => o.values.length);
-
-    const colorOpt = options.find(o => /color/i.test(o.name));
-    const sizeOpt  = options.find(o => /size/i.test(o.name));
-
-    // helpers
-    function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
-    function colorToHex(name) {
-        const map = {black:'#000', white:'#fff', blue:'#1E3A8A', navy:'#001F54', green:'#22C55E', red:'#DC2626',
-        pink:'#EC4899', yellow:'#F59E0B', purple:'#7C3AED', grey:'#6B7280', gray:'#6B7280',
-        beige:'#F5F5DC', brown:'#8B4513', orange:'#F97316', silver:'#C0C0C0', gold:'#D4AF37'};
-        const n = String(name||'').toLowerCase();
-        const hex = n.match(/#([0-9a-f]{3,8})/i); if (hex) return hex[0];
-        if (/^rgb/.test(n)) return n;
-        const base = Object.keys(map).find(k => n.includes(k));
-        return base ? map[base] : '#111';
-    }
-    function anyAvailable(filter) {
-        return variants.some(v => Object.keys(filter).every(k => v[k] === filter[k]) && v.available);
-    }
-    function getSelection() {
-        const sel = {};
-        if (colorOpt) {
-        if (colorOpt.values.length <= 3) {
-            const checked = optWrap.querySelector('input[name="qa-color"]:checked');
-            sel[`option${colorOpt.index}`] = checked ? checked.value : '';
-        } else {
-            sel[`option${colorOpt.index}`] = optWrap.querySelector('#qa-color')?.value || '';
-        }
-        }
-        if (sizeOpt) {
-        sel[`option${sizeOpt.index}`] = optWrap.querySelector('#qa-size')?.value || '';
-        }
-        return sel;
-    }
-    function findMatchingVariant() {
-        const sel = getSelection();
-        const candidates = variants.filter(v =>
-        Object.keys(sel).every(k => !sel[k] || v[k] === sel[k])
-        );
-        return candidates.find(v => v.available) || candidates[0] || variants[0] || null;
-    }
-    function syncVariantAndPrice() {
-        const variant = findMatchingVariant();
-        const variantSelect = document.getElementById('qa-variant');
-        if (variantSelect && variant) variantSelect.value = String(variant.id);
-        if (typeof renderPriceForVariant === 'function') renderPriceForVariant(variant, product);
-    }
-
-    // --- build COLOR ---
-    if (colorOpt) {
-        const fs = document.createElement('fieldset');
-        fs.className = 'qa-option qa-color';
-        const legend = document.createElement('legend');
-        legend.textContent = colorOpt.name;
-        fs.appendChild(legend);
-
-        if (colorOpt.values.length <= 3) {
-        const seg = document.createElement('div');
-        seg.className = 'qa-segmented';
-        seg.dataset.role = 'color-radios';
-
-        colorOpt.values.forEach((val, idx) => {
-            const id = `qa-color-${slug(val)}`;
-            const input = document.createElement('input');
-            input.type = 'radio';
-            input.className = 'sr-only';
-            input.name = 'qa-color';
-            input.id = id;
-            input.value = val;
-
-            const available = anyAvailable({[`option${colorOpt.index}`]: val});
-            if (!available) input.disabled = true;
-
-            const label = document.createElement('label');
-            label.className = 'seg-btn';
-            label.htmlFor = id;
-            label.textContent = val;
-            label.style.setProperty('--swatch', colorToHex(val));
-            if (!available) label.dataset.soldout = 'true';
-
-            if (idx === 0 && available) input.checked = true;
-
-            seg.appendChild(input);
-            seg.appendChild(label);
-        });
-
-        fs.appendChild(seg);
-        } else {
-        const wrap = document.createElement('div');
-        wrap.className = 'qa-select-wrap';
-        wrap.dataset.role = 'color-select';
-
-        const select = document.createElement('select');
-        select.id = 'qa-color';
-        select.setAttribute('aria-label', 'Color');
-
-        const ph = document.createElement('option');
-        ph.value = '';
-        ph.textContent = 'Choose a color';
-        select.appendChild(ph);
-
-        colorOpt.values.forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.textContent = val;
-            if (!anyAvailable({[`option${colorOpt.index}`]: val})) opt.disabled = true;
-            select.appendChild(opt);
-        });
-
-        wrap.appendChild(select);
-        fs.appendChild(wrap);
-        }
-
-        optWrap.appendChild(fs);
-    }
-
-    // --- build SIZE (styled select) ---
-    if (sizeOpt) {
-        const fs = document.createElement('fieldset');
-        fs.className = 'qa-option qa-size';
-
-        const legend = document.createElement('legend');
-        legend.textContent = sizeOpt.name;
-        fs.appendChild(legend);
-
-        const wrap = document.createElement('div');
-        wrap.className = 'qa-select-wrap';
-        wrap.dataset.role = 'size-select';
-
-        const select = document.createElement('select');
-        select.id = 'qa-size';
-        select.setAttribute('aria-label', 'Size');
-
-        const ph = document.createElement('option');
-        ph.value = '';
-        ph.textContent = 'Choose your size';
-        select.appendChild(ph);
-
-        sizeOpt.values.forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = val;
-        if (!anyAvailable({[`option${sizeOpt.index}`]: val})) opt.disabled = true;
-        select.appendChild(opt);
-        });
-
-        wrap.appendChild(select);
-        fs.appendChild(wrap);
-        optWrap.appendChild(fs);
-    }
-
-    // --- listeners + defaults ---
-    if (colorOpt) {
-        if (colorOpt.values.length <= 3) {
-        optWrap.querySelectorAll('input[name="qa-color"]').forEach(i => i.addEventListener('change', syncVariantAndPrice));
-        } else {
-        optWrap.querySelector('#qa-color')?.addEventListener('change', syncVariantAndPrice);
-        // set default to first enabled
-        const firstEnabled = Array.from(optWrap.querySelector('#qa-color')?.options || [])
-            .find(o => o.value && !o.disabled);
-        if (firstEnabled) optWrap.querySelector('#qa-color').value = firstEnabled.value;
-        }
-    }
-    if (sizeOpt) {
-        const sel = optWrap.querySelector('#qa-size');
-        if (sel) {
-        sel.addEventListener('change', syncVariantAndPrice);
-        const firstEnabled = Array.from(sel.options).find(o => o.value && !o.disabled);
-        if (firstEnabled) sel.value = firstEnabled.value;
-        }
-    }
-
-    syncVariantAndPrice(); // initialize price + hidden select
-    }
+  // update price on variant change
+  variantSelect.addEventListener('change', function() {
+    const selected = Array.from(this.options).find(o => o.selected);
+    if (!selected) return;
+    const variant = {
+      id: selected.value,
+      price: selected.dataset.price,
+      compare_at_price: selected.dataset.compare
+    };
+    renderPriceForVariant(variant);
+  });
 
   // close actions (backdrop, button, Esc)
   modal.addEventListener('click', function(e) {
@@ -470,7 +294,6 @@
       })
       .then(product => {
         populateModal(product);
-        console.log(product);
       })
       .catch(err => {
         console.error('Error loading product:', err);
