@@ -223,105 +223,129 @@
   }
 
   function renderOptionsUI(product) {
-    console.log("renderOptionsUI");
-    const variants = product.variants || [];
-    let optWrap = document.querySelector('.qa-options');
-    if (!optWrap) return;
-    optWrap.innerHTML = '';
+  const modalRoot = document.getElementById('quick-add-modal');
+  const optWrap = modalRoot.querySelector('.qa-options'); // scope to modal
+  if (!optWrap) return;
+  optWrap.innerHTML = '';
 
-    const optionNames = Array.isArray(product.options) ? product.options : [];
-    const opts = [1,2,3].map(i => ({
-        i,
-        name: optionNames[i-1] || `Option ${i}`,
-        values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
-    })).filter(o => o.values.length);
+  const variants = product.variants || [];
+  if (!variants.length) return;
 
-    const color = opts.find(o => /color/i.test(o.name));
-    const size  = opts.find(o => /size/i.test(o.name));
+  // build option meta (names + values)
+  const rawNames = Array.isArray(product.options) ? product.options : [];
+  const options = [1,2,3].map(i => ({
+    idx: i,
+    name: rawNames[i-1] || `Option ${i}`,
+    values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
+  })).filter(o => o.values.length);
 
-    const variantSelect = document.getElementById('qa-variant');
+  // smarter detection of Color / Size
+  const COLOR_WORDS = /(colou?r|farbe|kleur)/i;
+  const SIZE_WORDS  = /(size|talla|größe|maat)/i;
+  const looksLikeColor = vals => vals.some(v => /(black|white|blue|navy|red|green|yellow|purple|pink|grey|gray|beige|brown|orange|silver|gold|#|rgb)/i.test(v));
+  const looksLikeSize  = vals => vals.some(v => /^(xxs|xs|s|m|l|xl|xxl|2xl|3xl|[0-9]{2}|[0-9]+(cm|in|us|uk|eu)?)$/i.test(String(v).replace(/\s/g,'')));
 
-    const colorToHex = (n) => {
-        const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316'};
-        const s=String(n||'').toLowerCase(); const k=Object.keys(map).find(x=>s.includes(x)); return k?map[k]:'#111';
-    };
-    const anyAvail = (f) => variants.some(v => Object.keys(f).every(k=>v[k]===f[k]) && v.available);
+  let color = options.find(o => COLOR_WORDS.test(o.name)) || options.find(o => looksLikeColor(o.values));
+  let size  = options.find(o => SIZE_WORDS.test(o.name))  || options.find(o => looksLikeSize(o.values) && o !== color);
 
-    function getSel() {
-        const sel = {};
-        if (color) {
-        if (color.values.length <= 3) {
-            const c = optWrap.querySelector('input[name="qa-color"]:checked');
-            sel[`option${color.i}`] = c ? c.value : '';
-        } else { sel[`option${color.i}`] = optWrap.querySelector('#qa-color')?.value || ''; }
-        }
-        if (size) sel[`option${size.i}`] = optWrap.querySelector('#qa-size')?.value || '';
-        return sel;
-    }
-    function findVariant() {
-        const sel = getSel();
-        const cand = variants.filter(v => Object.keys(sel).every(k => !sel[k] || v[k]===sel[k]));
-        return cand.find(v=>v.available) || cand[0] || variants[0] || null;
-    }
-    function sync() {
-        const v = findVariant();
-        if (variantSelect && v) variantSelect.value = String(v.id);
-        if (typeof renderPriceForVariant==='function') renderPriceForVariant(v, product);
-    }
+  // fallback if still missing
+  if (!color && options[0]) color = options[0];
+  if (!size && options[1])  size  = options[1] === color ? options[0] : options[1];
 
-    // COLOR UI
+  const hiddenVariant = modalRoot.querySelector('#qa-variant');
+
+  const anyAvail = filter => variants.some(v => Object.keys(filter).every(k => v[k] === filter[k]) && v.available);
+  const idFor = (prefix, val) => `${prefix}-${String(val).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
+  const colorToHex = (name) => {
+    const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316',beige:'#F5F5DC',brown:'#8B4513',pink:'#EC4899',silver:'#C0C0C0',gold:'#D4AF37'};
+    const s=String(name||'').toLowerCase();
+    const m=s.match(/#([0-9a-f]{3,8})/i); if (m) return m[0];
+    if (/^rgb/.test(s)) return s;
+    const key=Object.keys(map).find(k=>s.includes(k));
+    return key?map[key]:'#111';
+  };
+
+  function currentSelection() {
+    const sel = {};
     if (color) {
-        const fs = document.createElement('fieldset'); fs.className = 'qa-option qa-color';
-        const lg = document.createElement('legend'); lg.textContent = color.name; fs.appendChild(lg);
-
-        if (color.values.length <= 3) {
-            const seg = document.createElement('div'); seg.className='qa-segmented'; seg.dataset.role='color-radios';
-            color.values.forEach((val,idx)=>{
-                const id = 'qa-color-'+val.toLowerCase().replace(/\W+/g,'-');
-                const input = document.createElement('input'); input.type='radio'; input.className='sr-only'; input.name='qa-color'; input.id=id; input.value=val;
-                const ok = anyAvail({[`option${color.i}`]: val}); if(!ok) input.disabled = true;
-                const lab = document.createElement('label'); lab.className='seg-btn'; lab.htmlFor=id; lab.textContent=val; lab.style.setProperty('--swatch', colorToHex(val));
-                if(!ok) lab.dataset.soldout='true'; if(idx===0 && ok) input.checked = true;
-                seg.append(input, lab);
-            });
-            fs.appendChild(seg);
-        } else {
-            const wrap = document.createElement('div'); wrap.className='qa-select-wrap'; wrap.dataset.role='color-select';
-            const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
-            sel.append(new Option('Choose a color',''));
-            color.values.forEach(val=>{ const o=new Option(val,val); if(!anyAvail({[`option${color.i}`]:val})) o.disabled=true; sel.append(o); });
-            wrap.appendChild(sel); fs.appendChild(wrap);
-        }
-        optWrap.appendChild(fs);
+      const radio = optWrap.querySelector('input[name="qa-color"]:checked');
+      sel[`option${color.idx}`] = radio ? radio.value : optWrap.querySelector('#qa-color')?.value || '';
     }
-
-    // SIZE UI
     if (size) {
-        const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
-        const lg = document.createElement('legend'); lg.textContent = size.name; fs.appendChild(lg);
-        const wrap = document.createElement('div'); wrap.className='qa-select-wrap'; wrap.dataset.role='size-select';
-        const sel = document.createElement('select'); sel.id='qa-size'; sel.setAttribute('aria-label','Size');
-        sel.append(new Option('Choose your size',''));
-        size.values.forEach(val=>{ const o=new Option(val,val); if(!anyAvail({[`option${size.i}`]:val})) o.disabled=true; sel.append(o); });
-        wrap.appendChild(sel); fs.appendChild(wrap); optWrap.appendChild(fs);
+      sel[`option${size.idx}`] = optWrap.querySelector('#qa-size')?.value || '';
     }
+    return sel;
+  }
+  function pickVariant() {
+    const sel = currentSelection();
+    const candidates = variants.filter(v => Object.entries(sel).every(([k,val]) => !val || v[k] === val));
+    return candidates.find(v => v.available) || candidates[0] || variants[0];
+  }
+  function sync() {
+    const v = pickVariant();
+    if (hiddenVariant && v) hiddenVariant.value = String(v.id);
+    renderPriceForVariant(v, product);
+  }
 
-    // listeners + defaults
-    optWrap.querySelectorAll('input[name="qa-color"]').forEach(i=>i.addEventListener('change', sync));
-    optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
-    optWrap.querySelector('#qa-size')?.addEventListener('change', sync);
+  // build Color UI
+  if (color) {
+    const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
+    fs.innerHTML = `<legend>${color.name}</legend>`;
+    if (color.values.length <= 3) {
+      const seg = document.createElement('div'); seg.className='qa-segmented';
+      color.values.forEach((val,i) => {
+        const ok = anyAvail({[`option${color.idx}`]: val});
+        const id = idFor('qa-color', val);
+        seg.insertAdjacentHTML('beforeend',
+          `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
+           <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
+      });
+      fs.appendChild(seg);
+    } else {
+      const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
+      const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
+      sel.appendChild(new Option('Choose a color',''));
+      color.values.forEach(val => {
+        const o = new Option(val, val);
+        if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true;
+        sel.appendChild(o);
+      });
+      wrap.appendChild(sel); fs.appendChild(wrap);
+    }
+    optWrap.appendChild(fs);
+  }
 
-    // set first enabled defaults for selects
-    ['#qa-color','#qa-size'].forEach(id=>{
-        const el = optWrap.querySelector(id);
-        if (el && !el.value) {
-        const first = Array.from(el.options).find(o => o.value && !o.disabled);
-        if (first) el.value = first.value;
-        }
+  // build Size UI (styled select)
+  if (size) {
+    const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
+    fs.innerHTML = `<legend>${size.name}</legend>`;
+    const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
+    const sel = document.createElement('select'); sel.id='qa-size'; sel.setAttribute('aria-label','Size');
+    sel.appendChild(new Option('Choose your size',''));
+    size.values.forEach(val => {
+      const o = new Option(val, val);
+      if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
+      sel.appendChild(o);
     });
+    wrap.appendChild(sel); fs.appendChild(wrap); optWrap.appendChild(fs);
+  }
 
-    sync();
+  // defaults for selects
+  ['#qa-color','#qa-size'].forEach(id => {
+    const el = optWrap.querySelector(id);
+    if (el && !el.value) {
+      const first = Array.from(el.options).find(o => o.value && !o.disabled);
+      if (first) el.value = first.value;
     }
+  });
+
+  optWrap.querySelectorAll('input[name="qa-color"]').forEach(i => i.addEventListener('change', sync));
+  optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
+  optWrap.querySelector('#qa-size')?.addEventListener('change', sync);
+
+  sync();
+}
+
 
 
   function populateModal(product) {
