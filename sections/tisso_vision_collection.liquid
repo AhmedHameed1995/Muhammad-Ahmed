@@ -350,7 +350,7 @@
   // ---------- COLOR UI ----------
   if (color) {
     const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
-    fs.innerHTML = `<legend>${color.name}</legend>`;
+    fs.innerHTML = `<legend>${color.name ? color.name.name : ''}</legend>`;
     if (color.values.length <= 3) {
       const seg = document.createElement('div'); seg.className='qa-segmented';
       color.values.forEach((val,i) => {
@@ -376,7 +376,7 @@
   // ---------- SIZE UI (custom dropdown + hidden select) ----------
   if (size) {
     const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
-    fs.innerHTML = `<legend>${size.name}</legend>`;
+    fs.innerHTML = `<legend>${size.name ? size.name.name : ''}</legend>`;
 
     // hidden native select (for form semantics)
     sizeHiddenSelect = document.createElement('select');
