@@ -5,6 +5,8 @@
         </div>
         <div class="page-width container">
             {%- for block in section.blocks -%}
+                aa
+                {{ block.settings.product }}
                 {%- assign product = all_products[block.settings.product] -%}
                 {%- if product != blank -%}
                     <div class="tissio_products" 
