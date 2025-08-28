@@ -90,8 +90,8 @@
                         if (!response.ok) {
                             throw new Error('Product not found');
                         }
-                        //return response.json();
-                        console.log(response.json());
+                        return response.json();
+                        //console.log(response.json());
 
                     })
                     .then(product => {
