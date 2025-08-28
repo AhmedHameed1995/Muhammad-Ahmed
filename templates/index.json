@@ -70,8 +70,8 @@
           "type": "product",
           "settings": {
             "product": "floral-white-top",
-            "coordinate_top": "",
-            "coordinate_left": ""
+            "coordinate_top": "180",
+            "coordinate_left": "40"
           }
         },
         "product_GqLmGq": {
@@ -86,8 +86,8 @@
           "type": "product",
           "settings": {
             "product": "classic-leather-jacket",
-            "coordinate_top": "",
-            "coordinate_left": ""
+            "coordinate_top": "80",
+            "coordinate_left": "250"
           }
         }
       },
