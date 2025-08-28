@@ -622,6 +622,8 @@
 
     
     function populateModal(product) {
+        currentProduct = product; 
+
         titleEl.textContent = product.title || '';
         descriptionEl.innerHTML = product.description || '';
 
