@@ -658,8 +658,10 @@
         
         if (defaultVariant) variantSelect.value = String(defaultVariant.id);
             renderPriceForVariant(defaultVariant, product);
+            // Variation Will render from this Function
             renderOptionsUI(product);  
             openModal();
+            // Add to cart will add prodcut to cart as per requirements
             setATCState();
     }
 
