@@ -313,7 +313,6 @@
         try {
           await addToCart(variant.id, 1);
           atcBtn.textContent = 'Added ✓';
-          await refreshCartBubble();
           setTimeout(setATCState, 2000);
         } catch (err) {
           console.error('ATC failed', err);
