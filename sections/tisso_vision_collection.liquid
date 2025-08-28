@@ -255,16 +255,39 @@
     }
 
     function setATCState(){
-    if (!atcBtn) return;
-    const v = getSelectedVariant(currentProduct);
-    if (!v || v.available === false){
+        if (!atcBtn) return;
+        const v = getSelectedVariant(currentProduct);
+        if (!v || v.available === false){
+            atcBtn.disabled = true;
+            atcBtn.textContent = v ? 'Sold out' : 'Select options';
+        } else {
+            atcBtn.disabled = false;
+            atcBtn.textContent = 'Add to cart';
+        }
+    }
+
+        // ==== Add to Cart click ====
+    if (atcBtn) {
+      atcBtn.addEventListener('click', async () => {
+        const variant = getSelectedVariant(currentProduct);
+        if (!variant || !variant.id) return;
+
         atcBtn.disabled = true;
-        atcBtn.textContent = v ? 'Sold out' : 'Select options';
-    }else{
-        atcBtn.disabled = false;
-        atcBtn.textContent = 'Add to cart';
+        atcBtn.textContent = 'Adding...';
+
+        try {
+          await addToCart(variant.id, 1);
+          atcBtn.textContent = 'Added ✓';
+          await refreshCartBubble();
+          setTimeout(setATCState, 2000);
+        } catch (err) {
+          console.error('ATC failed', err);
+          atcBtn.textContent = 'Error';
+          setTimeout(setATCState, 2000);
+        }
+      });
     }
-    }
+
 
     async function addToCart(variantId, qty=1){
         const res = await fetch('/cart/add.js', {
