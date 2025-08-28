@@ -431,7 +431,7 @@
     // default to first enabled size
     const firstEnabled = [...sizeList.querySelectorAll('.qa-dd-option')]
       .find(li => li.getAttribute('aria-disabled') === 'false');
-    if (firstEnabled) sizeSetValue(firstEnabled.dataset.value + 'a');
+    if (firstEnabled) sizeSetValue(firstEnabled.dataset.value);
 
     // interactions
     btn.addEventListener('click', () => {
