@@ -223,6 +223,7 @@
   }
 
   function renderOptionsUI(product) {
+    console.log("renderOptionsUI");
     const variants = product.variants || [];
     let optWrap = document.querySelector('.qa-options');
     if (!optWrap) return;
