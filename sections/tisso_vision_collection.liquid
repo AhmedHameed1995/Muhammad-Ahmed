@@ -167,6 +167,28 @@
   .qa-body { grid-template-columns: 1fr; }
   .qa-media img { height: 300px; }
 }
+
+
+/* custom dropdown (Size) */
+.qa-dropdown { position: relative; }
+.qa-dd-button {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid #cfcfcf; border-radius: 8px; background: #fff; padding: 12px;
+  cursor: pointer; font: inherit; color: #111;
+}
+.qa-dd-button::after {
+  content: ""; margin-left: 8px;
+  border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid #111;
+}
+.qa-dd-list {
+  position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+  border: 1px solid #cfcfcf; border-radius: 8px; background: #fff;
+  max-height: 240px; overflow: auto; padding: 6px 0; display: none; z-index: 10;
+}
+.qa-dropdown.open .qa-dd-list { display: block; }
+.qa-dd-option { padding: 10px 12px; cursor: pointer; }
+.qa-dd-option[aria-disabled="true"] { color: #9a9a9a; cursor: not-allowed; }
+.qa-dd-option[aria-selected="true"] { background: #f5f5f5; }
 </style>
 <script>
 
