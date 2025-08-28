@@ -18,7 +18,7 @@
                                 loading="lazy"
                             >
                         {%- endif -%}
-                        <span class="plus-icon" data-product-handle="{{ product.handle }}">+</span>
+                        <span class="plus-icon" data-product-handle="{{ product.handle }}" style="top:'{{ block.settings.coordinate_top }}'; left:'{{ block.settings.coordinate_left }}';">+</span>
                     </div>
                 </div>
             {%- endif -%}
