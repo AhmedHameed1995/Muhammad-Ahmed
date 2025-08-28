@@ -674,7 +674,7 @@
             // variants
             variantSelect.innerHTML = '';
             const variants = product.variants || [];
-            
+
             console.log(product.variants);
             variants.forEach(v => {
                 const opt = document.createElement('option');
@@ -701,10 +701,10 @@
         variantSelect.addEventListener('change', function() {
             const selected = Array.from(this.options).find(o => o.selected);
             if (!selected) return;
-            const variant = {
-            id: selected.value,
-            price: selected.dataset.price,
-            compare_at_price: selected.dataset.compare
+                const variant = {
+                id: selected.value,
+                price: selected.dataset.price,
+                compare_at_price: selected.dataset.compare
             };
             renderPriceForVariant(variant);
         });
