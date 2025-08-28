@@ -220,10 +220,18 @@
 
 /* Add to cart button */
 .qa-add{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:10px 14px;border-radius:8px;border:1px solid #111;
-  background:#111;color:#fff;font-weight:600;cursor:pointer;
-  transition:transform .18s ease, background .18s ease, opacity .18s;
+    align-items: center;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid #111;
+    background: #111;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .18s ease, background .18s ease, opacity .18s;
+    width: 100%;
+    font-size: 18px;
+    text-align: center;
 }
 .qa-add:disabled{opacity:.5;cursor:not-allowed}
 .qa-add.is-loading{pointer-events:none;opacity:.7}
