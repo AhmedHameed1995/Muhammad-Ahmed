@@ -85,6 +85,19 @@
                 e.preventDefault();
                 const productHandle = plusIcon.getAttribute('data-product-handle');
                 console.log(productHandle);
+                fetch(`/products/${productHandle}.js`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Product not found');
+                        }
+                        return response.json();
+                    })
+                    .then(product => {
+                        // Format price
+                    }).
+                    .catch(error => {
+                        console.error('Error loading product:', error);
+                    });
             }
     });
 </script>
