@@ -446,18 +446,6 @@
     syncVariantAndPrice(); // initialize price + hidden select
     }
 
-  // update price on variant change
-  variantSelect.addEventListener('change', function() {
-    const selected = Array.from(this.options).find(o => o.selected);
-    if (!selected) return;
-    const variant = {
-      id: selected.value,
-      price: selected.dataset.price,
-      compare_at_price: selected.dataset.compare
-    };
-    renderPriceForVariant(variant);
-  });
-
   // close actions (backdrop, button, Esc)
   modal.addEventListener('click', function(e) {
     if (e.target.closest('[data-close-modal]')) closeModal();
