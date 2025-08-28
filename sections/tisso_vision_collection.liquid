@@ -315,25 +315,25 @@
             const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
             fs.innerHTML = `<legend>${color.name.name}</legend>`;
             if (color.values.length <= 3) {
-            const seg = document.createElement('div'); seg.className='qa-segmented';
-            color.values.forEach((val,i) => {
-                const ok = anyAvail({[`option${color.idx}`]: val});
-                const id = idFor('qa-color', val);
-                seg.insertAdjacentHTML('beforeend',
-                `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
-                <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
-            });
-            fs.appendChild(seg);
+                const seg = document.createElement('div'); seg.className='qa-segmented';
+                color.values.forEach((val,i) => {
+                    const ok = anyAvail({[`option${color.idx}`]: val});
+                    const id = idFor('qa-color', val);
+                    seg.insertAdjacentHTML('beforeend',
+                    `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
+                    <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
+                });
+                fs.appendChild(seg);
             } else {
-            const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
-            const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
-            sel.appendChild(new Option('Choose a color',''));
-            color.values.forEach(val => {
-                const o = new Option(val, val);
-                if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true;
-                sel.appendChild(o);
-            });
-            wrap.appendChild(sel); fs.appendChild(wrap);
+                const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
+                const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
+                sel.appendChild(new Option('Choose a color',''));
+                color.values.forEach(val => {
+                    const o = new Option(val, val);
+                    if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true;
+                    sel.appendChild(o);
+                });
+                wrap.appendChild(sel); fs.appendChild(wrap);
             }
             optWrap.appendChild(fs);
         }
