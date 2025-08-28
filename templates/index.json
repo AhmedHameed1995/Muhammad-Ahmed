@@ -70,48 +70,48 @@
           "type": "product",
           "settings": {
             "product": "floral-white-top",
-            "coordinate_top": "180",
-            "coordinate_left": "40"
+            "coordinate_top": "60",
+            "coordinate_left": "25"
           }
         },
         "product_GqLmGq": {
           "type": "product",
           "settings": {
             "product": "blue-silk-tuxedo",
-            "coordinate_top": "250",
-            "coordinate_left": "180"
+            "coordinate_top": "70",
+            "coordinate_left": "70"
           }
         },
         "product_y664aj": {
           "type": "product",
           "settings": {
             "product": "classic-leather-jacket",
-            "coordinate_top": "80",
-            "coordinate_left": "250"
+            "coordinate_top": "50",
+            "coordinate_left": "50"
           }
         },
         "product_9f8bMk": {
           "type": "product",
           "settings": {
             "product": "olive-green-jacket",
-            "coordinate_top": "",
-            "coordinate_left": ""
+            "coordinate_top": "70",
+            "coordinate_left": "65"
           }
         },
         "product_bfbtge": {
           "type": "product",
           "settings": {
             "product": "navy-sport-jacket",
-            "coordinate_top": "100",
-            "coordinate_left": "100"
+            "coordinate_top": "50",
+            "coordinate_left": "50"
           }
         },
         "product_4BG4Pc": {
           "type": "product",
           "settings": {
             "product": "silk-summer-top",
-            "coordinate_top": "200",
-            "coordinate_left": "90"
+            "coordinate_top": "60",
+            "coordinate_left": "25"
           }
         }
       },
