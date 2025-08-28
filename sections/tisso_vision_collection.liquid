@@ -23,7 +23,29 @@
                 </div>
             {%- endif -%}
         {%- endfor -%}
-        
+        <!-- ===== Quick Add Modal (HTML) ===== -->
+        <div id="quick-add-modal" class="qa-modal" aria-hidden="true">
+        <div class="qa-backdrop" data-close-modal></div>
+        <div class="qa-dialog" role="dialog" aria-modal="true" aria-labelledby="qa-modal-title">
+            <button class="qa-close" type="button" aria-label="Close" data-close-modal>&times;</button>
+            <div class="qa-body">
+            <div class="qa-media">
+                <img id="qa-image" alt="" />
+            </div>
+            <div class="qa-info">
+                <h3 id="qa-modal-title"></h3>
+                <div class="qa-price" id="qa-price"></div>
+                <label class="qa-variant-wrap">
+                <span>Variant</span>
+                <select id="qa-variant"></select>
+                </label>
+                <div class="qa-actions">
+                <a id="qa-view-link" class="qa-view-link" href="#">View product</a>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
 
     </div>
 </div>
@@ -77,33 +99,179 @@
     color: #000;
     border-radius: 50%;
 }
+
+.qa-modal { position: fixed; inset: 0; display: none; z-index: 9999; }
+.qa-modal.is-open { display: block; }
+.qa-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+.qa-dialog {
+  position: relative; max-width: 900px; margin: 5vh auto; background: #fff;
+  border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.2);
+}
+.qa-close {
+  position: absolute; right: 10px; top: 10px; background: #fff; border: 1px solid #eee;
+  width: 36px; height: 36px; border-radius: 999px; cursor: pointer; font-size: 20px; line-height: 1;
+}
+.qa-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+.qa-media img { width: 100%; height: 420px; object-fit: cover; border-radius: 12px; }
+.qa-info h3 { margin: 0 0 8px; font-size: 20px; }
+.qa-price { font-weight: 700; margin-bottom: 12px; }
+.qa-price .compare { text-decoration: line-through; opacity: .6; margin-left: 8px; font-weight: 400; }
+.qa-variant-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.qa-variant-wrap select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+.qa-actions { display: flex; gap: 10px; align-items: center; }
+.qa-view-link { display: inline-block; padding: 10px 14px; border-radius: 8px; border: 1px solid #111; text-decoration: none; color: #111; font-weight: 600; }
+@media (max-width: 768px) {
+  .qa-body { grid-template-columns: 1fr; }
+  .qa-media img { height: 300px; }
+}
 </style>
 <script>
-     document.addEventListener('click', function(e) {
-            // Check if clicked element is plus icon or its child
-            const plusIcon = e.target.closest('.plus-icon');
-            if (plusIcon) {
-                e.preventDefault();
-                const productHandle = plusIcon.getAttribute('data-product-handle');
-                console.log(productHandle);
-                fetch(`/products/${productHandle}.js`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Product not found');
-                        }
-                        return response.json();
-                        //console.log(response.json());
 
-                    })
-                    .then(product => {
-                        // Format price
-                        console.log(product);
-                    })
-                    .catch(error => {
-                        console.error('Error loading product:', error);
-                    });
-            }
+(function() {
+  const modal = document.getElementById('quick-add-modal');
+  const imgEl = document.getElementById('qa-image');
+  const titleEl = document.getElementById('qa-modal-title');
+  const priceEl = document.getElementById('qa-price');
+  const variantSelect = document.getElementById('qa-variant');
+  const viewLink = document.getElementById('qa-view-link');
+
+  // helpers
+  function openModal() {
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    // prevent body scroll
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    // focus close for accessibility
+    modal.querySelector('.qa-close').focus();
+  }
+  function closeModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+  function addWidthParam(url, width) {
+    if (!url) return '';
+    try {
+      const u = new URL(url);
+      if (!u.searchParams.get('width')) u.searchParams.set('width', String(width));
+      return u.toString();
+    } catch(_) {
+      // fallback if relative URL
+      const joiner = url.includes('?') ? '&' : '?';
+      return url + joiner + 'width=' + width;
+    }
+  }
+  function toCents(val) {
+    const s = String(val ?? '');
+    const n = Number(s.replace(/[^\d.]/g, ''));
+    if (!isFinite(n)) return 0;
+    return s.includes('.') ? Math.round(n * 100) : Math.round(n);
+  }
+  function formatMoneyGeneric(cents) {
+    const currency = (window.Shopify && Shopify.currency && Shopify.currency.active) || 'USD';
+    const locale = (window.Shopify && Shopify.locale) || navigator.language || 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
+  }
+  function formatMoney(value) {
+    const cents = toCents(value);
+    if (window.Shopify && typeof Shopify.formatMoney === 'function') {
+      // Using Shopify's own formatter if available
+      return Shopify.formatMoney(cents);
+    }
+    return formatMoneyGeneric(cents);
+  }
+
+  function renderPriceForVariant(variant, product) {
+    const priceHTML = [];
+    if (variant) {
+      priceHTML.push(`<span class="price">${formatMoney(variant.price)}</span>`);
+      // Some themes have compare_at_price for variants; fallback to product-level if needed
+      const compare = variant.compare_at_price || product?.compare_at_price;
+      if (compare && toCents(compare) > toCents(variant.price)) {
+        priceHTML.push(`<span class="compare">${formatMoney(compare)}</span>`);
+      }
+    }
+    priceEl.innerHTML = priceHTML.join('');
+  }
+
+  function populateModal(product) {
+    titleEl.textContent = product.title || '';
+    viewLink.href = `/products/${product.handle}`;
+
+    // image
+    const firstImg =
+      (product.images && product.images[0] && (product.images[0].src || product.images[0])) ||
+      product.featured_image ||
+      product.image;
+    imgEl.src = firstImg ? addWidthParam(firstImg, 900) : '';
+    imgEl.alt = product.title || '';
+
+    // variants
+    variantSelect.innerHTML = '';
+    const variants = product.variants || [];
+    variants.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
+      opt.dataset.price = v.price;
+      opt.dataset.compare = v.compare_at_price || '';
+      variantSelect.appendChild(opt);
     });
+
+    const defaultVariant =
+      variants.find(v => v.available) || variants[0] || null;
+    if (defaultVariant) {
+      variantSelect.value = String(defaultVariant.id);
+    }
+
+    renderPriceForVariant(defaultVariant, product);
+    openModal();
+  }
+
+  // update price on variant change
+  variantSelect.addEventListener('change', function() {
+    const selected = Array.from(this.options).find(o => o.selected);
+    if (!selected) return;
+    const variant = {
+      id: selected.value,
+      price: selected.dataset.price,
+      compare_at_price: selected.dataset.compare
+    };
+    renderPriceForVariant(variant);
+  });
+
+  // close actions (backdrop, button, Esc)
+  modal.addEventListener('click', function(e) {
+    if (e.target.closest('[data-close-modal]')) closeModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+  });
+
+  // ===== Plus icon click (event delegation) =====
+  document.addEventListener('click', function(e) {
+    const plusIcon = e.target.closest('.plus-icon');
+    if (!plusIcon) return;
+
+    e.preventDefault();
+    const productHandle = plusIcon.getAttribute('data-product-handle');
+    if (!productHandle) return;
+
+    fetch(`/products/${productHandle}.js`, { credentials: 'same-origin' })
+      .then(res => {
+        if (!res.ok) throw new Error('Product not found');
+        return res.json();
+      })
+      .then(product => {
+        populateModal(product);
+      })
+      .catch(err => {
+        console.error('Error loading product:', err);
+      });
+  });
+})();
 </script>
 {% schema %}
 {
