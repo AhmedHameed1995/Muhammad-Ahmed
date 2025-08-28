@@ -145,6 +145,19 @@
 .qa-variant-wrap select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
 .qa-actions { display: flex; gap: 10px; align-items: center; }
 .qa-view-link { display: inline-block; padding: 10px 14px; border-radius: 8px; border: 1px solid #111; text-decoration: none; color: #111; font-weight: 600; }
+/* hide the hidden variant select properly */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* options UI */
+.qa-options{display:grid;gap:12px;margin:12px 0}
+.qa-option{border:0;padding:0;margin:0}
+.qa-option legend{font-size:14px;color:#333;margin-bottom:6px}
+.qa-segmented{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.seg-btn{display:flex;align-items:center;border:1px solid #cfcfcf;border-radius:8px;padding:10px 12px;cursor:pointer;background:#fff}
+.seg-btn::before{content:"";width:6px;align-self:stretch;background:var(--swatch,#111);border-top-left-radius:8px;border-bottom-left-radius:8px;margin:-10px 10px -10px -12px}
+.qa-select-wrap{position:relative;border:1px solid #cfcfcf;border-radius:8px;background:#fff}
+.qa-select-wrap select{appearance:none;width:100%;padding:12px 40px 12px 12px;border:0;background:transparent}
+.qa-select-wrap::after{content:"";position:absolute;right:12px;top:50%;transform:translateY(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #111}
 @media (max-width: 768px) {
   .qa-body { grid-template-columns: 1fr; }
   .qa-media img { height: 300px; }
