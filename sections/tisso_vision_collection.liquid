@@ -2,19 +2,18 @@
     <div class="product_grid_wrapper">
         <div class="page-width container">
             <h2>{{section.settings.heading}}</h2>
+        </div>
+        <div class="page-width container">
             {% paginate section.settings.collection.products by section.settings.products_to_show %}
-            <div class="tissio_products_wrap">
                 {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
                     <div class="tissio_products">
                         <div class="product_image">
                             {%- if product.featured_media -%}
                                 <img src="{{ product.featured_media | image_url:  width: 360, height: 360  }} 360w" width="" />
                             {% endif %}
-                            
                         </div>
                     </div>
                 {% endfor %}
-            </div>
             {% endpaginate %}
         </div>
     </div>
