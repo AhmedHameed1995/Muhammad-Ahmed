@@ -46,7 +46,7 @@
                         <div class="qa-info">
 
                             <div class="qa-actions">
-                                <button id="qa-add-to-cart" type="button" class="qa-add">Add to cart</button>
+                                <a id="qa-view-link" class="qa-view-link" href="#">View product</a>
                             </div>
                         </div>
                     </div>
@@ -216,25 +216,6 @@
 .qa-dd-option { padding: 10px 12px; cursor: pointer; }
 .qa-dd-option[aria-disabled="true"] { color: #9a9a9a; cursor: not-allowed; }
 .qa-dd-option[aria-selected="true"] { background: #f5f5f5; }
-
-
-/* Add to cart button */
-.qa-add{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:10px 14px;border-radius:8px;border:1px solid #111;
-  background:#111;color:#fff;font-weight:600;cursor:pointer;
-  transition:transform .18s ease, background .18s ease, opacity .18s;
-}
-.qa-add:disabled{opacity:.5;cursor:not-allowed}
-.qa-add.is-loading{pointer-events:none;opacity:.7}
-.qa-add.is-added{background:#16a34a;border-color:#16a34a;animation:qa-bump .35s ease}
-
-@keyframes qa-bump{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
-
-/* bubble pop animation (works with many themes) */
-.cart-count-bubble.pop,
-.header__icon--cart .cart-count.pop,
-[data-cart-count].pop{animation:qa-bump .35s ease}
 </style>
 <script>
 
@@ -535,6 +516,7 @@
     function populateModal(product) {
         titleEl.textContent = product.title || '';
         descriptionEl.innerHTML = product.description || '';
+        viewLink.href = `/products/${product.handle}`;
 
         // image
         const firstImg =
