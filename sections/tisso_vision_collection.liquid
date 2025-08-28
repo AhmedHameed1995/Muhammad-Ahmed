@@ -238,6 +238,7 @@
     // variants
     variantSelect.innerHTML = '';
     const variants = product.variants || [];
+    console.log(product.variants);
     variants.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
