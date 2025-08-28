@@ -227,9 +227,6 @@
       {%- endif -%}
     {%- endif -%}
 
-    <div class="ideal_gift_text">
-        Find the ideal gift for your loved ones.
-    </div>
     <div class="header__icons{% if section.settings.enable_country_selector or section.settings.enable_language_selector %} header__icons--localization header-localization{% endif %}">
       <div class="choose_gift">
           <a href="{{ section.settings.choose_gift_link }}">
@@ -498,6 +495,11 @@
         "type": "url",
         "id": "choose_gift_link",
         "label": "Choose Gift Link",
+    },
+    {
+        "type": "text",
+        "id": "ideal_text",
+        "label": "Find Ideal",
     },
     {
       "type": "select",
