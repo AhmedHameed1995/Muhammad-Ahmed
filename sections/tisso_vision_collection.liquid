@@ -331,7 +331,7 @@
   // build Size UI (styled select)
   if (size) {
     const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
-    fs.innerHTML = `<legend>${size.name}</legend>`;
+    fs.innerHTML = `<legend>${size.name.name}</legend>`;
     const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
     const sel = document.createElement('select'); sel.id='qa-size'; sel.setAttribute('aria-label','Size');
     sel.appendChild(new Option('Choose your size',''));
