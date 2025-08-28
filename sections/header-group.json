@@ -39,6 +39,8 @@
     "header": {
       "type": "header",
       "settings": {
+        "choose_gift": "Choose Gift",
+        "choose_gift_link": "#",
         "logo_position": "middle-left",
         "mobile_logo_position": "center",
         "menu": "main-menu",
