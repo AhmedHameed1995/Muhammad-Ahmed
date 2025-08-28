@@ -66,6 +66,14 @@
     "tisso_vision_collection_EGApLN": {
       "type": "tisso_vision_collection",
       "blocks": {
+        "product_7JwyHz": {
+          "type": "product",
+          "settings": {
+            "product": "floral-white-top",
+            "coordinate_top": "",
+            "coordinate_left": ""
+          }
+        },
         "product_GqLmGq": {
           "type": "product",
           "settings": {
@@ -84,6 +92,7 @@
         }
       },
       "block_order": [
+        "product_7JwyHz",
         "product_GqLmGq",
         "product_y664aj"
       ],
