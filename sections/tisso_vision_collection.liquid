@@ -99,6 +99,31 @@
     color: #000;
     border-radius: 50%;
 }
+
+.qa-modal { position: fixed; inset: 0; display: none; z-index: 9999; }
+.qa-modal.is-open { display: block; }
+.qa-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+.qa-dialog {
+  position: relative; max-width: 900px; margin: 5vh auto; background: #fff;
+  border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.2);
+}
+.qa-close {
+  position: absolute; right: 10px; top: 10px; background: #fff; border: 1px solid #eee;
+  width: 36px; height: 36px; border-radius: 999px; cursor: pointer; font-size: 20px; line-height: 1;
+}
+.qa-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+.qa-media img { width: 100%; height: 420px; object-fit: cover; border-radius: 12px; }
+.qa-info h3 { margin: 0 0 8px; font-size: 20px; }
+.qa-price { font-weight: 700; margin-bottom: 12px; }
+.qa-price .compare { text-decoration: line-through; opacity: .6; margin-left: 8px; font-weight: 400; }
+.qa-variant-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.qa-variant-wrap select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+.qa-actions { display: flex; gap: 10px; align-items: center; }
+.qa-view-link { display: inline-block; padding: 10px 14px; border-radius: 8px; border: 1px solid #111; text-decoration: none; color: #111; font-weight: 600; }
+@media (max-width: 768px) {
+  .qa-body { grid-template-columns: 1fr; }
+  .qa-media img { height: 300px; }
+}
 </style>
 <script>
      document.addEventListener('click', function(e) {
