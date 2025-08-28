@@ -131,6 +131,7 @@
   const modal = document.getElementById('quick-add-modal');
   const imgEl = document.getElementById('qa-image');
   const titleEl = document.getElementById('qa-modal-title');
+  const descriptionEl = document.getElementById('qa-modal-description');
   const priceEl = document.getElementById('qa-price');
   const variantSelect = document.getElementById('qa-variant');
   const viewLink = document.getElementById('qa-view-link');
@@ -198,6 +199,7 @@
 
   function populateModal(product) {
     titleEl.textContent = product.title || '';
+    descriptionEl.textContent = product.description || '';
     viewLink.href = `/products/${product.handle}`;
 
     // image
