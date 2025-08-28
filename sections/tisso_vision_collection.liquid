@@ -441,13 +441,14 @@
     });
     document.addEventListener('click', (ev) => {
       if (!dd.contains(ev.target)) {
-        dd.classList.remove('open'); btn.setAttribute('aria-expanded','false');
+        dd.classList.remove('open'); 
+        btn.setAttribute('aria-expanded','false');
       }
     });
     sizeList.addEventListener('click', e => {
       const li = e.target.closest('.qa-dd-option');
       if (!li || li.getAttribute('aria-disabled') === 'true') return;
-      sizeSetValue(li.dataset.value + ' ss');
+      sizeSetValue(li.dataset.value);
       dd.classList.remove('open'); 
       btn.setAttribute('aria-expanded','false');
     });
