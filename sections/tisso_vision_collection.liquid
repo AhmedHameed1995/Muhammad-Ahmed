@@ -246,6 +246,73 @@
     const priceEl = document.getElementById('qa-price');
     const variantSelect = document.getElementById('qa-variant');
 
+    let currentProduct = null;
+    const atcBtn = document.getElementById('qa-add-to-cart');
+
+    function getSelectedVariant(product){
+        const id = String(document.getElementById('qa-variant')?.value || '');
+        return (product?.variants || []).find(v => String(v.id) === id) || null;
+    }
+
+    function setATCState(){
+    if (!atcBtn) return;
+    const v = getSelectedVariant(currentProduct);
+    if (!v || v.available === false){
+        atcBtn.disabled = true;
+        atcBtn.textContent = v ? 'Sold out' : 'Select options';
+    }else{
+        atcBtn.disabled = false;
+        atcBtn.textContent = 'Add to cart';
+    }
+    }
+
+    async function addToCart(variantId, qty=1){
+    const res = await fetch('/cart/add.js', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({ id: variantId, quantity: qty })
+    });
+    if(!res.ok) throw new Error('Add to cart failed');
+    return res.json();
+    }
+
+    async function refreshCartBubble(){
+    try{
+        const res = await fetch('/cart.js', { headers:{'Accept':'application/json'} });
+        const cart = await res.json();
+        const count = cart.item_count || 0;
+
+        const candidates = [
+        document.querySelector('#cart-icon-bubble .cart-count-bubble .text'),
+        document.querySelector('.cart-count-bubble .text'),
+        document.querySelector('[data-cart-count]'),
+        document.querySelector('.header__icon--cart .cart-count'),
+        document.querySelector('.cart-count-bubble')
+        ].filter(Boolean);
+
+        candidates.forEach(el=>{
+        // support multiple theme structures
+        if (el.hasAttribute?.('data-cart-count')){
+            el.setAttribute('data-cart-count', count);
+            el.classList.add('pop');
+            el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
+        } else if (el.classList.contains('text')){
+            el.textContent = count;
+            const wrap = el.closest('.cart-count-bubble');
+            if (wrap){ wrap.classList.toggle('hidden', count===0); wrap.classList.add('pop');
+            wrap.addEventListener('animationend',()=>wrap.classList.remove('pop'),{once:true});
+            }
+        } else {
+            el.textContent = count;
+            el.classList.add('pop');
+            el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
+        }
+        });
+
+        document.dispatchEvent(new CustomEvent('cart:refresh',{detail:cart}));
+    }catch(e){ console.error('Bubble refresh failed', e); }
+    }
+
     // helpers
     function openModal() {
         modal.classList.add('is-open');
@@ -587,72 +654,7 @@
         if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
     });
 
-    let currentProduct = null;
-const atcBtn = document.getElementById('qa-add-to-cart');
-
-function getSelectedVariant(product){
-  const id = String(document.getElementById('qa-variant')?.value || '');
-  return (product?.variants || []).find(v => String(v.id) === id) || null;
-}
-
-function setATCState(){
-  if (!atcBtn) return;
-  const v = getSelectedVariant(currentProduct);
-  if (!v || v.available === false){
-    atcBtn.disabled = true;
-    atcBtn.textContent = v ? 'Sold out' : 'Select options';
-  }else{
-    atcBtn.disabled = false;
-    atcBtn.textContent = 'Add to cart';
-  }
-}
-
-async function addToCart(variantId, qty=1){
-  const res = await fetch('/cart/add.js', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({ id: variantId, quantity: qty })
-  });
-  if(!res.ok) throw new Error('Add to cart failed');
-  return res.json();
-}
-
-async function refreshCartBubble(){
-  try{
-    const res = await fetch('/cart.js', { headers:{'Accept':'application/json'} });
-    const cart = await res.json();
-    const count = cart.item_count || 0;
-
-    const candidates = [
-      document.querySelector('#cart-icon-bubble .cart-count-bubble .text'),
-      document.querySelector('.cart-count-bubble .text'),
-      document.querySelector('[data-cart-count]'),
-      document.querySelector('.header__icon--cart .cart-count'),
-      document.querySelector('.cart-count-bubble')
-    ].filter(Boolean);
-
-    candidates.forEach(el=>{
-      // support multiple theme structures
-      if (el.hasAttribute?.('data-cart-count')){
-        el.setAttribute('data-cart-count', count);
-        el.classList.add('pop');
-        el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
-      } else if (el.classList.contains('text')){
-        el.textContent = count;
-        const wrap = el.closest('.cart-count-bubble');
-        if (wrap){ wrap.classList.toggle('hidden', count===0); wrap.classList.add('pop');
-          wrap.addEventListener('animationend',()=>wrap.classList.remove('pop'),{once:true});
-        }
-      } else {
-        el.textContent = count;
-        el.classList.add('pop');
-        el.addEventListener('animationend',()=>el.classList.remove('pop'),{once:true});
-      }
-    });
-
-    document.dispatchEvent(new CustomEvent('cart:refresh',{detail:cart}));
-  }catch(e){ console.error('Bubble refresh failed', e); }
-}
+    
     // ===== Plus icon click (event delegation) =====
     document.addEventListener('click', function(e) {
         const plusIcon = e.target.closest('.plus-icon');
