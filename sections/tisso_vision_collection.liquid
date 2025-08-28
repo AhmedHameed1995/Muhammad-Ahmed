@@ -105,8 +105,15 @@
 .qa-modal.is-open { display: block; }
 .qa-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
 .qa-dialog {
-  position: relative; max-width: 900px; margin: 5vh auto; background: #fff;
-  border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.2);
+    position: relative;
+    max-width: 900px;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .2);
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0 auto;
 }
 .qa-close {
   position: absolute; right: 10px; top: 10px; background: #fff; border: 1px solid #eee;
