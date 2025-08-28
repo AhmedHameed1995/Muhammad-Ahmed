@@ -65,10 +65,21 @@
     },
     "tisso_vision_collection_EGApLN": {
       "type": "tisso_vision_collection",
+      "blocks": {
+        "product_GqLmGq": {
+          "type": "product",
+          "settings": {
+            "product": "blue-silk-tuxedo",
+            "coordinates": "12.3456, 98.7654"
+          }
+        }
+      },
+      "block_order": [
+        "product_GqLmGq"
+      ],
       "name": "Tisso Vision Collection",
       "settings": {
         "heading": "Tisso Vision in the wild",
-        "collection": "frontpage",
         "products_to_show": 6
       }
     },
