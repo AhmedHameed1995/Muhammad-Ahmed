@@ -109,7 +109,14 @@
 
 .qa-modal { position: fixed; inset: 0; display: none; z-index: 9999; max-width:100% !important; }
 .qa-modal.is-open { display: block; }
-.qa-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+.qa-backdrop { 
+    position: absolute; 
+    inset: 0; 
+    background: rgba(0,0,0,.5);
+    width: 100%;
+    height: 100%;
+    display: flex; 
+}
 .product_modal_wrap {
     display: grid; 
     grid-template-columns: 1fr 1fr; 
