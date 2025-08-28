@@ -267,13 +267,13 @@
     }
 
     async function addToCart(variantId, qty=1){
-    const res = await fetch('/cart/add.js', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify({ id: variantId, quantity: qty })
-    });
-    if(!res.ok) throw new Error('Add to cart failed');
-    return res.json();
+        const res = await fetch('/cart/add.js', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Accept':'application/json'},
+            body:JSON.stringify({ id: variantId, quantity: qty })
+        });
+        if(!res.ok) throw new Error('Add to cart failed');
+        return res.json();
     }
 
     async function refreshCartBubble(){
