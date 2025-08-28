@@ -222,6 +222,107 @@
     priceEl.innerHTML = priceHTML.join('');
   }
 
+  function renderOptionsUI(product) {
+    const variants = product.variants || [];
+    let optWrap = document.querySelector('.qa-options');
+    if (!optWrap) return;
+    optWrap.innerHTML = '';
+
+    const optionNames = Array.isArray(product.options) ? product.options : [];
+    const opts = [1,2,3].map(i => ({
+        i,
+        name: optionNames[i-1] || `Option ${i}`,
+        values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
+    })).filter(o => o.values.length);
+
+    const color = opts.find(o => /color/i.test(o.name));
+    const size  = opts.find(o => /size/i.test(o.name));
+
+    const variantSelect = document.getElementById('qa-variant');
+
+    const colorToHex = (n) => {
+        const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316'};
+        const s=String(n||'').toLowerCase(); const k=Object.keys(map).find(x=>s.includes(x)); return k?map[k]:'#111';
+    };
+    const anyAvail = (f) => variants.some(v => Object.keys(f).every(k=>v[k]===f[k]) && v.available);
+
+    function getSel() {
+        const sel = {};
+        if (color) {
+        if (color.values.length <= 3) {
+            const c = optWrap.querySelector('input[name="qa-color"]:checked');
+            sel[`option${color.i}`] = c ? c.value : '';
+        } else { sel[`option${color.i}`] = optWrap.querySelector('#qa-color')?.value || ''; }
+        }
+        if (size) sel[`option${size.i}`] = optWrap.querySelector('#qa-size')?.value || '';
+        return sel;
+    }
+    function findVariant() {
+        const sel = getSel();
+        const cand = variants.filter(v => Object.keys(sel).every(k => !sel[k] || v[k]===sel[k]));
+        return cand.find(v=>v.available) || cand[0] || variants[0] || null;
+    }
+    function sync() {
+        const v = findVariant();
+        if (variantSelect && v) variantSelect.value = String(v.id);
+        if (typeof renderPriceForVariant==='function') renderPriceForVariant(v, product);
+    }
+
+    // COLOR UI
+    if (color) {
+        const fs = document.createElement('fieldset'); fs.className = 'qa-option qa-color';
+        const lg = document.createElement('legend'); lg.textContent = color.name; fs.appendChild(lg);
+
+        if (color.values.length <= 3) {
+        const seg = document.createElement('div'); seg.className='qa-segmented'; seg.dataset.role='color-radios';
+        color.values.forEach((val,idx)=>{
+            const id = 'qa-color-'+val.toLowerCase().replace(/\W+/g,'-');
+            const input = document.createElement('input'); input.type='radio'; input.className='sr-only'; input.name='qa-color'; input.id=id; input.value=val;
+            const ok = anyAvail({[`option${color.i}`]: val}); if(!ok) input.disabled = true;
+            const lab = document.createElement('label'); lab.className='seg-btn'; lab.htmlFor=id; lab.textContent=val; lab.style.setProperty('--swatch', colorToHex(val));
+            if(!ok) lab.dataset.soldout='true'; if(idx===0 && ok) input.checked = true;
+            seg.append(input, lab);
+        });
+        fs.appendChild(seg);
+        } else {
+        const wrap = document.createElement('div'); wrap.className='qa-select-wrap'; wrap.dataset.role='color-select';
+        const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
+        sel.append(new Option('Choose a color',''));
+        color.values.forEach(val=>{ const o=new Option(val,val); if(!anyAvail({[`option${color.i}`]:val})) o.disabled=true; sel.append(o); });
+        wrap.appendChild(sel); fs.appendChild(wrap);
+        }
+        optWrap.appendChild(fs);
+    }
+
+    // SIZE UI
+    if (size) {
+        const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
+        const lg = document.createElement('legend'); lg.textContent = size.name; fs.appendChild(lg);
+        const wrap = document.createElement('div'); wrap.className='qa-select-wrap'; wrap.dataset.role='size-select';
+        const sel = document.createElement('select'); sel.id='qa-size'; sel.setAttribute('aria-label','Size');
+        sel.append(new Option('Choose your size',''));
+        size.values.forEach(val=>{ const o=new Option(val,val); if(!anyAvail({[`option${size.i}`]:val})) o.disabled=true; sel.append(o); });
+        wrap.appendChild(sel); fs.appendChild(wrap); optWrap.appendChild(fs);
+    }
+
+    // listeners + defaults
+    optWrap.querySelectorAll('input[name="qa-color"]').forEach(i=>i.addEventListener('change', sync));
+    optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
+    optWrap.querySelector('#qa-size')?.addEventListener('change', sync);
+
+    // set first enabled defaults for selects
+    ['#qa-color','#qa-size'].forEach(id=>{
+        const el = optWrap.querySelector(id);
+        if (el && !el.value) {
+        const first = Array.from(el.options).find(o => o.value && !o.disabled);
+        if (first) el.value = first.value;
+        }
+    });
+
+    sync();
+    }
+
+
   function populateModal(product) {
     titleEl.textContent = product.title || '';
     descriptionEl.innerHTML = product.description || '';
