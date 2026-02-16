@@ -1,0 +1,760 @@
+<div class="product_grid_wrapper">
+    <div class="page-width container">
+        <h2>{{section.settings.heading}}</h2>
+    </div>
+    <div class="page-width container">
+        {%- for block in section.blocks -%}
+            {%- assign product = all_products[block.settings.product] -%}
+            {%- if product != blank -%}
+                <div class="tissio_products" 
+                    data-coordinates="{{ block.settings.coordinates | escape }}">
+                    <div class="product_image">
+                        {%- if product.featured_media -%}
+                            <img 
+                                src="{{ product.featured_media | image_url: width: 360, height: 360 }}" 
+                                alt="{{ product.featured_media.alt | escape }}"
+                                width="360" 
+                                height="360"
+                                loading="lazy"
+                            >
+                        {%- endif -%}
+                        <span class="plus-icon" data-product-handle="{{ product.handle }}" style="top:{{ block.settings.coordinate_top | escape}}%; left:{{ block.settings.coordinate_left | escape }}%;">+</span>
+                    </div>
+                </div>
+            {%- endif -%}
+        {%- endfor -%}
+        <!-- ===== Quick Add Modal (HTML) ===== -->
+        <div id="quick-add-modal" class="qa-modal" aria-hidden="true">
+            <div class="qa-backdrop" data-close-modal></div>
+            <div class="qa-dialog" role="dialog" aria-modal="true" aria-labelledby="qa-modal-title">
+                <button class="qa-close" type="button" aria-label="Close" data-close-modal>&times;</button>
+                <div class="qa-body">
+                    <div class="product_modal_wrap"> 
+                        <div class="qa-media">
+                            <img id="qa-image" alt="" loading="lazy" width="" height="" />
+                        </div>
+                        <div class="qa-info">
+                            <h3 id="qa-modal-title"></h3>
+                            <div class="qa-price" id="qa-price"></div>
+                            <div id="qa-modal-description"></div>   
+                        </div>
+                    </div>
+                    <div class="variant_modal_wrap"> 
+                        <select id="qa-variant" class="sr-only" aria-hidden="false" tabindex="-1"></select>
+                        <div class="qa-options"></div>
+
+                        <div class="qa-info">
+
+                            <div class="qa-actions">
+                                <button id="qa-add-to-cart" type="button" class="qa-add our_btn">Add to cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<style>
+{% comment %}
+-- CSS is Related to this section only 
+-- Main Header CSS will only work on Homepage because i didn't created custom.css file  
+{% endcomment %}
+
+.product_grid_wrapper {
+    margin-top:20px;
+}
+.product_grid_wrapper > .container {
+    display: flex;
+    gap: 10px 15px;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+.product_grid_wrapper > .container > * {
+    flex: 0 0 100%;
+    max-width: 32%;
+}
+.product_grid_wrapper > .container .product_image {
+    overflow:hidden;
+    display: inline-flex;
+    position:relative;
+}
+.product_grid_wrapper > .container .tissio_products:hover {
+   cursor:pointer;
+}
+
+.product_grid_wrapper > .container .product_image img {
+    max-width: 100%;
+    max-height: 325px;
+    object-fit: cover;
+    height: auto;
+}
+.product_grid_wrapper > .container .product_text a {
+    text-decoration:none;
+    color:currentColor;
+}
+.product_grid_wrapper > .container .product_text a:hover {
+    text-decoration:underline;
+}
+.plus-icon {
+    position: absolute;
+    z-index: 1;
+    background: #fff;
+    font-size: 25px;
+    width: 25px;
+    height: 25px;
+    line-height: 21px;
+    text-align: center;
+    color: #000;
+    border-radius: 50%;
+}
+
+.qa-modal { position: fixed; inset: 0; display: none; z-index: 9999; max-width:100% !important; }
+.qa-modal.is-open { display: block; }
+.qa-backdrop { 
+    position: absolute; 
+    inset: 0; 
+    background: rgba(0,0,0,.5);
+    width: 100%;
+    height: 100%;
+    display: flex !important; 
+}
+.product_modal_wrap {
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px;
+}
+.qa-dialog {
+    position: relative;
+    max-width: 500px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .2);
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0 auto;
+    width:95%;
+}
+.qa-close {
+  position: absolute; right: 10px; top: 10px; background: #fff; border: 1px solid #eee;
+  width: 36px; height: 36px; border-radius: 999px; cursor: pointer; font-size: 20px; line-height: 1;
+}
+.qa-body { display:flex; flex-wrap:wrap; padding: 20px; overflow:auto; }
+.qa-media img { width: 100%; height: 225px; object-fit: cover; }
+.qa-info h3 { margin: 0 0 8px; font-size: 20px; }
+.qa-price { font-weight: 700; margin-bottom: 12px; }
+.qa-price .compare { text-decoration: line-through; opacity: .6; margin-left: 8px; font-weight: 400; }
+.qa-variant-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.qa-variant-wrap select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+.qa-actions { display: flex; gap: 10px; align-items: center; }
+.qa-view-link { display: inline-block; padding: 10px 14px; border-radius: 8px; border: 1px solid #111; text-decoration: none; color: #111; font-weight: 600; }
+/* hide the hidden variant select properly */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* options UI */
+.qa-options{display:grid;gap:12px;margin:12px 0}
+.qa-option{border:0;padding:0;margin:0}
+.qa-option legend{font-size:14px;color:#333;margin-bottom:6px}
+.qa-segmented{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.seg-btn{display:flex;align-items:center;border:1px solid #111;padding:10px 12px;cursor:pointer;background:#fff}
+.seg-btn::before{content:"";width:6px;align-self:stretch;background:var(--swatch,#111);margin:-10px 10px -10px -12px}
+.qa-select-wrap{position:relative;border:1px solid #111;border-radius:8px;background:#fff}
+.qa-select-wrap select{appearance:none;width:100%;padding:12px 40px 12px 12px;border:0;background:transparent}
+.qa-select-wrap::after{content:"";position:absolute;right:12px;top:50%;transform:translateY(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #111}
+.variant_modal_wrap {
+    width:100%;
+}
+.sr-only:checked + label {
+    border-color: #9d0000;
+}
+
+/* custom dropdown (Size) */
+.qa-dropdown { position: relative; }
+.qa-dd-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #111;
+    background: #fff;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: #111;
+}
+.qa-dd-label {
+    width: 85%;
+    float: left;
+    text-align: left;
+    border-right: 1px solid #111;
+    padding: 10px 12px;
+}
+.qa-dd-button::after {
+    content: "";
+    margin-left: 8px;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #111;
+    margin-right: 29px;
+}
+.qa-dd-list {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 34px;
+    border: 1px solid #111;
+    background: #fff;
+    max-height: 240px;
+    overflow: auto;
+    padding: 0;
+    display: none;
+    z-index: 10;
+}
+.qa-dropdown.open .qa-dd-list { display: block; }
+.qa-dd-option { padding: 10px 12px; cursor: pointer; }
+.qa-dd-option[aria-disabled="true"] { color: #9a9a9a; cursor: not-allowed; }
+.qa-dd-option[aria-selected="true"] { background: #f5f5f5; }
+
+
+/* Add to cart button */
+.qa-add{
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #111;
+    background-color: #111;
+    padding:10px 30px 10px 30px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .18s ease, background .18s ease, opacity .18s;
+    width: 100%;
+    font-size: 18px;
+    text-align: center;
+    margin-top:30px;
+}
+.qa-add:disabled{opacity:.5;cursor:not-allowed}
+.qa-add.is-loading{pointer-events:none;opacity:.7}
+.qa-add.is-added{background:#16a34a;border-color:#16a34a;animation:qa-bump .35s ease}
+
+@keyframes qa-bump{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+/* bubble pop animation (works with many themes) */
+.cart-count-bubble.pop,
+.header__icon--cart .cart-count.pop,
+[data-cart-count].pop{animation:qa-bump .35s ease}
+
+
+@media (max-width: 849px) {
+  .product_grid_wrapper > .container > * {
+        flex: 0 0 100%;
+        max-width: 48%;
+    }
+}
+@media (max-width: 768px) {
+  .qa-body { grid-template-columns: 1fr; }
+  .qa-media img { height: 300px; }
+  .product_grid_wrapper > .container > * {
+        flex: 0 0 100%;
+        max-width: 48%;
+    }
+    
+}
+@media (max-width: 460px) {
+    .product_grid_wrapper > .container > * {
+        max-width: 100%;
+    }
+    .qa-media img {
+        height:200px;
+    }
+    .qa-dd-button::after {
+        margin-right:6%;
+    }
+}
+</style>
+<script>
+
+(function() {
+    const modal = document.getElementById('quick-add-modal');
+    const imgEl = document.getElementById('qa-image');
+    const titleEl = document.getElementById('qa-modal-title');
+    const descriptionEl = document.getElementById('qa-modal-description');
+    const priceEl = document.getElementById('qa-price');
+    const variantSelect = document.getElementById('qa-variant');
+
+    let currentProduct = null;
+    const atcBtn = document.getElementById('qa-add-to-cart');
+
+    function getSelectedVariant(product){
+        const id = String(document.getElementById('qa-variant')?.value || '');
+        return (product?.variants || []).find(v => String(v.id) === id) || null;
+    }
+
+    function setATCState(){
+        if (!atcBtn) return;
+        const v = getSelectedVariant(currentProduct);
+        if (!v || v.available === false){
+            atcBtn.disabled = true;
+            atcBtn.textContent = v ? 'Sold out' : 'Select options';
+        } else {
+            atcBtn.disabled = false;
+            atcBtn.textContent = 'Add to cart';
+        }
+    }
+
+        // ==== Add to Cart click ====
+    if (atcBtn) {
+      atcBtn.addEventListener('click', async () => {
+        const variant = getSelectedVariant(currentProduct);
+        
+        if (!variant || !variant.id) return;
+
+        atcBtn.disabled = true;
+        atcBtn.textContent = 'Adding...';
+
+        try {
+          await addToCart(variant.id, 1);
+          atcBtn.textContent = 'Added ✓';
+          setTimeout(setATCState, 2000);
+        } catch (err) {
+          console.error('ATC failed', err);
+          atcBtn.textContent = 'Error';
+          setTimeout(setATCState, 2000);
+        }
+      });
+    }
+
+
+    async function addToCart(variantId, qty=1){
+        const res = await fetch('/cart/add.js', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Accept':'application/json'},
+            body:JSON.stringify({ id: variantId, quantity: qty })
+        });
+        if(!res.ok) throw new Error('Add to cart failed');
+        return res.json();
+    }
+
+    // helpers
+    function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        // prevent body scroll
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+        // focus close for accessibility
+        modal.querySelector('.qa-close').focus();
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+    }
+
+    function addWidthParam(url, width) {
+        if (!url) return '';
+        try {
+            const u = new URL(url);
+        if (!u.searchParams.get('width')) u.searchParams.set('width', String(width));
+            return u.toString();
+        } catch(_) {
+            // fallback if relative URL
+            const joiner = url.includes('?') ? '&' : '?';
+            return url + joiner + 'width=' + width;
+        }
+    }
+    
+    function toCents(val) {
+        const s = String(val ?? '');
+        const n = Number(s.replace(/[^\d.]/g, ''));
+        if (!isFinite(n)) return 0;
+        return s.includes('.') ? Math.round(n * 100) : Math.round(n);
+    }
+
+    function formatMoneyGeneric(cents) {
+        const currency = (window.Shopify && Shopify.currency && Shopify.currency.active) || 'USD';
+        const locale = (window.Shopify && Shopify.locale) || navigator.language || 'en-US';
+        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100);
+    }
+
+    function formatMoney(value) {
+        const cents = toCents(value);
+        if (window.Shopify && typeof Shopify.formatMoney === 'function') {
+            // Using Shopify's own formatter if available
+            return Shopify.formatMoney(cents);
+        }
+        return formatMoneyGeneric(cents);
+    }
+
+    function renderPriceForVariant(variant, product) {
+        const priceHTML = [];
+        if (variant) {
+            priceHTML.push(`<span class="price">${formatMoney(variant.price)}</span>`);
+            // Some themes have compare_at_price for variants; fallback to product-level if needed
+            const compare = variant.compare_at_price || product?.compare_at_price;
+            if (compare && toCents(compare) > toCents(variant.price)) {
+                priceHTML.push(`<span class="compare">${formatMoney(compare)}</span>`);
+            }
+        }
+        priceEl.innerHTML = priceHTML.join('');
+    }
+
+    function renderOptionsUI(product) {
+        const modalRoot = document.getElementById('quick-add-modal');
+        const optWrap = modalRoot.querySelector('.qa-options');
+        if (!optWrap) return;
+        optWrap.innerHTML = '';
+
+        const variants = product.variants || [];
+        if (!variants.length) return;
+
+        const rawNames = Array.isArray(product.options) ? product.options : [];
+        const options = [1,2,3].map(i => ({
+            idx: i,
+            name: rawNames[i-1] || `Option ${i}`,
+            values: Array.from(new Set(variants.map(v => v[`option${i}`]).filter(Boolean)))
+        })).filter(o => o.values.length);
+
+        // detect Color/Size (robust)
+        const COLOR_WORDS = /(colou?r|farbe|kleur)/i;
+        const SIZE_WORDS  = /(size|talla|größe|maat)/i;
+        const looksLikeColor = vals => vals.some(v => /(black|white|blue|navy|red|green|yellow|purple|pink|grey|gray|beige|brown|orange|silver|gold|#|rgb)/i.test(v));
+        const looksLikeSize  = vals => vals.some(v => /^(xxs|xs|s|m|l|xl|xxl|2xl|3xl|[0-9]{2}|[0-9]+(cm|in|us|uk|eu)?)$/i.test(String(v).replace(/\s/g,'')));
+        let color = options.find(o => COLOR_WORDS.test(o.name)) || options.find(o => looksLikeColor(o.values));
+        let size  = options.find(o => SIZE_WORDS.test(o.name))  || options.find(o => looksLikeSize(o.values) && o !== color);
+        if (!color && options[0]) color = options[0];
+        if (!size && options[1])  size  = options[1] === color ? options[0] : options[1];
+
+        const hiddenVariant = modalRoot.querySelector('#qa-variant');
+        const anyAvail = filter => variants.some(v => Object.keys(filter).every(k => v[k] === filter[k]) && v.available);
+        const idFor = (prefix, val) => `${prefix}-${String(val).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`;
+        const colorToHex = name => {
+            const map={black:'#000',white:'#fff',blue:'#1E3A8A',navy:'#001F54',green:'#22C55E',red:'#DC2626',yellow:'#F59E0B',purple:'#7C3AED',grey:'#6B7280',gray:'#6B7280',orange:'#F97316',beige:'#F5F5DC',brown:'#8B4513',pink:'#EC4899',silver:'#C0C0C0',gold:'#D4AF37'};
+            const s=String(name||'').toLowerCase(); const m=s.match(/#([0-9a-f]{3,8})/i); if (m) return m[0];
+            if (/^rgb/.test(s)) return s; const k=Object.keys(map).find(x=>s.includes(x)); return k?map[k]:'#111';
+        };
+
+        // ---------- helpers that depend on UI ----------
+        let sizeHiddenSelect = null, sizeList = null, sizeSetValue = null;
+
+        function currentSelection() {
+            const sel = {};
+            if (color) {
+                const radio = optWrap.querySelector('input[name="qa-color"]:checked');
+                sel[`option${color.idx}`] = radio ? radio.value : optWrap.querySelector('#qa-color')?.value || '';
+            }
+            if (size) {
+                sel[`option${size.idx}`] = sizeHiddenSelect?.value || '';
+            }
+            return sel;
+        }
+
+        function pickVariant() {
+            const sel = currentSelection();
+            const candidates = variants.filter(v => Object.entries(sel).every(([k,val]) => !val || v[k] === val));
+            return candidates.find(v => v.available) || candidates[0] || variants[0];
+        }
+
+        function updateSizeAvailability() {
+            if (!size || !sizeList) return;
+                const sel = currentSelection();
+                const colorVal = color ? sel[`option${color.idx}`] : null;
+            sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
+                const f = { [`option${size.idx}`]: li.dataset.value };
+                if (color && colorVal) f[`option${color.idx}`] = colorVal;
+                const ok = anyAvail(f);
+                li.setAttribute('aria-disabled', ok ? 'false' : 'true');
+                // if current selection became invalid, move to first available
+                if (!ok && sizeHiddenSelect?.value === li.dataset.value) {
+                    const first = [...sizeList.querySelectorAll('.qa-dd-option')].find(x => x.getAttribute('aria-disabled') === 'false');
+                    if (first) sizeSetValue(first.dataset.value);
+                }
+            });
+        }
+
+        function sync() {
+            updateSizeAvailability();
+            const v = pickVariant();
+            if (hiddenVariant && v) hiddenVariant.value = String(v.id);
+            renderPriceForVariant(v, product);
+        }
+
+        // ---------- COLOR UI ----------
+        if (color) {
+            const fs = document.createElement('fieldset'); fs.className='qa-option qa-color';
+            fs.innerHTML = `<legend>${color.name ? color.name.name : ''}</legend>`;
+            if (color.values.length <= 3) {
+                const seg = document.createElement('div'); seg.className='qa-segmented';
+                color.values.forEach((val,i) => {
+                    const ok = anyAvail({[`option${color.idx}`]: val});
+                    const id = idFor('qa-color', val);
+                    seg.insertAdjacentHTML('beforeend',
+                    `<input class="sr-only" type="radio" name="qa-color" id="${id}" value="${val}" ${ok ? (i===0 ? 'checked' : '') : 'disabled'}>
+                    <label class="seg-btn" for="${id}" style="--swatch:${colorToHex(val)}">${val}${ok?'':' '}</label>`);
+                });
+                fs.appendChild(seg);
+            } else {
+                const wrap = document.createElement('div'); wrap.className='qa-select-wrap';
+                const sel = document.createElement('select'); sel.id='qa-color'; sel.setAttribute('aria-label','Color');
+                sel.appendChild(new Option('Choose a color',''));
+                color.values.forEach(val => {
+                    const o = new Option(val, val); if (!anyAvail({[`option${color.idx}`]: val})) o.disabled = true; sel.appendChild(o);
+                });
+                wrap.appendChild(sel); fs.appendChild(wrap);
+            }
+            optWrap.appendChild(fs);
+        }
+
+        // ---------- SIZE UI (custom dropdown + hidden select) ----------
+        if (size) {
+            const fs = document.createElement('fieldset'); fs.className='qa-option qa-size';
+            fs.innerHTML = `<legend>${size.name ? size.name.name : ''}</legend>`;
+
+            // hidden native select (for form semantics)
+            sizeHiddenSelect = document.createElement('select');
+            sizeHiddenSelect.id = 'qa-size';
+            sizeHiddenSelect.className = 'sr-only';
+            sizeHiddenSelect.setAttribute('aria-hidden','true');
+            sizeHiddenSelect.appendChild(new Option('',''));
+            size.values.forEach(val => {
+                const o = new Option(val, val);
+                if (!anyAvail({[`option${size.idx}`]: val})) o.disabled = true;
+                    sizeHiddenSelect.appendChild(o);
+                });
+
+                // visible custom dropdown
+                const dd = document.createElement('div'); dd.className = 'qa-dropdown';
+                dd.innerHTML = `
+                <button type="button" class="qa-dd-button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="qa-dd-label">Choose your size</span>
+                </button>
+                <ul class="qa-dd-list" role="listbox" tabindex="-1"></ul>
+                `;
+                sizeList = dd.querySelector('.qa-dd-list');
+                const btn = dd.querySelector('.qa-dd-button');
+                const label = dd.querySelector('.qa-dd-label');
+
+                // populate list
+                size.values.forEach(val => {
+                const li = document.createElement('li');
+                li.className = 'qa-dd-option';
+                li.setAttribute('role','option');
+                li.dataset.value = val;
+                const ok = anyAvail({[`option${size.idx}`]: val});
+                li.setAttribute('aria-disabled', ok ? 'false' : 'true');
+                li.textContent = val;
+                sizeList.appendChild(li);
+            });
+
+            fs.appendChild(sizeHiddenSelect);
+            fs.appendChild(dd);
+            optWrap.appendChild(fs);
+
+            // select setter
+            sizeSetValue = function(val) {
+                sizeHiddenSelect.value = val || '';
+                label.textContent = val || 'Choose your size';
+                sizeList.querySelectorAll('.qa-dd-option').forEach(li => {
+                    li.setAttribute('aria-selected', li.dataset.value === val ? 'true' : 'false');
+                });
+                sync();
+            };
+
+            // default to first enabled size
+            const firstEnabled = [...sizeList.querySelectorAll('.qa-dd-option')]
+            .find(li => li.getAttribute('aria-disabled') === 'false');
+            if (firstEnabled) sizeSetValue(firstEnabled.dataset.value);
+
+            // interactions
+            btn.addEventListener('click', () => {
+                const isOpen = dd.classList.toggle('open');
+                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                if (isOpen) sizeList.focus({preventScroll:true});
+            });
+
+            document.addEventListener('click', (ev) => {
+                if (!dd.contains(ev.target)) {
+                    dd.classList.remove('open'); 
+                    btn.setAttribute('aria-expanded','false');
+                }
+            });
+
+            sizeList.addEventListener('click', e => {
+                const li = e.target.closest('.qa-dd-option');
+                if (!li || li.getAttribute('aria-disabled') === 'true') return;
+                sizeSetValue(li.dataset.value);
+                dd.classList.remove('open'); 
+                btn.setAttribute('aria-expanded','false');
+            });
+
+            sizeList.addEventListener('keydown', e => {
+                const avail = [...sizeList.querySelectorAll('.qa-dd-option[aria-disabled="false"]')];
+                const cur = avail.findIndex(el => el.getAttribute('aria-selected') === 'true');
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const next = e.key === 'ArrowDown' ? Math.min(cur + 1, avail.length - 1) : Math.max(cur - 1, 0);
+                    avail[next]?.focus();
+                } else if (e.key === 'Enter') {
+                    const el = document.activeElement.closest('.qa-dd-option');
+                    if (el) { sizeSetValue(el.dataset.value); dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }
+                } else if (e.key === 'Escape') {
+                    dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus();
+                }
+            });
+        }
+
+        // listeners for color changes (keep everything in sync)
+        optWrap.querySelectorAll('input[name="qa-color"]').forEach(i => i.addEventListener('change', sync));
+        optWrap.querySelector('#qa-color')?.addEventListener('change', sync);
+
+        // defaults for plain selects (if any)
+        ['#qa-color'].forEach(id => {
+            const el = optWrap.querySelector(id);
+            if (el && !el.value) {
+            const first = Array.from(el.options).find(o => o.value && !o.disabled);
+            if (first) el.value = first.value;
+            }
+        });
+
+        sync();
+    }
+
+    function populateModal(product) {
+        currentProduct = product; 
+
+        titleEl.textContent = product.title || '';
+        descriptionEl.innerHTML = product.description || '';
+        imgEl.src = "";
+        // image
+        const firstImg =
+        (product.images && product.images[0] && (product.images[0].src || product.images[0])) ||
+        product.featured_image ||
+        product.image;
+        imgEl.src = firstImg ? addWidthParam(firstImg, 900) : '';
+        imgEl.alt = product.title || '';
+
+        // variants
+        variantSelect.innerHTML = '';
+        const variants = product.variants || [];
+
+        console.log(product.variants);
+        variants.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = v.title + (v.available === false ? ' — Sold out' : '');
+            opt.dataset.price = v.price;
+            opt.dataset.compare = v.compare_at_price || '';
+            variantSelect.appendChild(opt);
+        });
+
+        const defaultVariant =
+        variants.find(v => v.available) || variants[0] || null;
+
+        
+        if (defaultVariant) variantSelect.value = String(defaultVariant.id);
+            renderPriceForVariant(defaultVariant, product);
+            // Variation Will render from this Function
+            renderOptionsUI(product);  
+            openModal();
+            // Add to cart will add prodcut to cart as per requirements
+            setATCState();
+    }
+
+    // update price on variant change
+    variantSelect.addEventListener('change', function() {
+        const selected = Array.from(this.options).find(o => o.selected);
+        if (!selected) return;
+            const variant = {
+            id: selected.value,
+            price: selected.dataset.price,
+            compare_at_price: selected.dataset.compare
+        };
+        renderPriceForVariant(variant);
+    });
+
+    // close actions (backdrop, button, Esc)
+    modal.addEventListener('click', function(e) {
+        if (e.target.closest('[data-close-modal]')) closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+    });
+    
+    // ===== Plus icon click (event delegation) =====
+    document.addEventListener('click', function(e) {
+        const plusIcon = e.target.closest('.plus-icon');
+        if (!plusIcon) return;
+
+        e.preventDefault();
+        const productHandle = plusIcon.getAttribute('data-product-handle');
+        if (!productHandle) return;
+
+        fetch(`/products/${productHandle}.js`, { credentials: 'same-origin' })
+        .then(res => {
+            if (!res.ok) throw new Error('Product not found');
+            return res.json();
+        })
+        .then(product => {
+            populateModal(product);
+        })
+        .catch(err => {
+            console.error('Error loading product:', err);
+        });
+    });
+})();
+</script>
+{% schema %}
+{
+    "name": "Tisso Vision Collection",
+    "tag": "section",
+    "class": "section",
+    "disabled_on": {
+        "groups": ["header", "footer"]
+    },
+    "settings": [
+         {
+            "type": "text",
+            "id": "heading",
+            "label": "Heading"
+        }  
+    ],
+    "blocks": [
+        {
+            "type": "product",
+            "name": "Product",
+            "settings": [
+                {
+                    "type": "product",
+                    "id": "product",
+                    "label": "Product"
+                },
+                {
+                    "type": "text",
+                    "id": "coordinate_top",
+                    "label": "Top",
+                    "info": "Enter the coordinates for this product from top (e.g., 10)"
+                },
+                {
+                    "type": "text",
+                    "id": "coordinate_left",
+                    "label": "Left",
+                    "info": "Enter the coordinates for this product from top (e.g., 10)"
+                }
+            ],
+            "limit" : 6
+        }
+    ],
+    "presets": [
+        {
+            "name": "Tisso Vision Collection",
+            "category": "EcomExperts",
+        }   
+    ]
+}
+{%- endschema -%}
