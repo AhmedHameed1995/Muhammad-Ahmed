@@ -123,6 +123,7 @@
     data-sticky-type="{{ section.settings.sticky_header_type }}"
   {% endif %}
   class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}"
+  style="background-color:{{ section.settings.background_color }}"
 >
   {%- liquid
     assign social_links = false
@@ -138,6 +139,9 @@
   -%}
   <header class="header header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}">
     {%- liquid
+      render 'top_bar_drawer'
+    -%} 
+    {% comment %} {%- liquid
       if section.settings.menu != blank
         render 'header-drawer'
       endif
@@ -145,7 +149,7 @@
       if section.settings.logo_position == 'top-center' or section.settings.menu == blank
         render 'header-search', input_id: 'Search-In-Modal-1'
       endif
-    -%}
+    -%} {% endcomment %}
 
     {%- if section.settings.logo_position != 'middle-center' -%}
       {%- if request.page_type == 'index' -%}
@@ -180,7 +184,7 @@
       {%- endif -%}
     {%- endif -%}
 
-    {%- liquid
+    {% comment %} {%- liquid
       if section.settings.menu != blank
         if section.settings.menu_type_desktop == 'dropdown'
           render 'header-dropdown-menu'
@@ -188,8 +192,12 @@
           render 'header-mega-menu'
         endif
       endif
-    %}
-
+    %} {% endcomment %}
+    <nav class="header__inline-menu">
+      <ul class="list-menu list-menu--inline" role="list">
+        <li>{{section.settings.ideal_text}}</li>
+      </ul>
+    </nav>
     {%- if section.settings.logo_position == 'middle-center' -%}
       {%- if request.page_type == 'index' -%}
         <h1 class="header__heading">
@@ -224,6 +232,14 @@
     {%- endif -%}
 
     <div class="header__icons{% if section.settings.enable_country_selector or section.settings.enable_language_selector %} header__icons--localization header-localization{% endif %}">
+      <div class="choose_gift">
+          <a href="{{ section.settings.choose_gift_link }}">
+              {{ section.settings.choose_gift }}
+          </a>
+      </div>
+    </div>
+    
+    <div class="header__icons{% if section.settings.enable_country_selector or section.settings.enable_language_selector %} header__icons--localization header-localization{% endif %}" style="display:none;">
       <div class="desktop-localization-wrapper">
         {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
           <localization-form class="small-hide medium-hide" data-prevent-hide>
@@ -301,7 +317,9 @@
           </div>
         {%- endif -%}
       </a>
+    
     </div>
+    
   </header>
 </{{ header_tag }}>
 
@@ -472,6 +490,26 @@
   "class": "section-header",
   "max_blocks": 3,
   "settings": [
+    {
+        "type": "text",
+        "id": "choose_gift",
+        "label": "Choose Gift Button",
+    },
+    {
+        "type": "url",
+        "id": "choose_gift_link",
+        "label": "Choose Gift Link",
+    },
+    {
+        "type": "text",
+        "id": "ideal_text",
+        "label": "Find Ideal",
+    },
+    {
+        "type": "color",
+        "id": "background_color",
+        "label": "Header Background",
+    },
     {
       "type": "select",
       "id": "logo_position",

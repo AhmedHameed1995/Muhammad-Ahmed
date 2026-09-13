@@ -1,0 +1,282 @@
+<div class="testing-banner">
+    <div class="hero_banner">
+        {% if section.settings.image != blank %}
+            <div class="hero_image">
+                <img 
+                    src="{{ section.settings.image | img_url: '1600x' }}" 
+                    alt="{{ section.settings.hero_heading | escape }}" 
+                    class="hero_img"
+                    width=""
+                    height=""
+                >
+            </div>
+        {%  else %}
+            <div class="hero_image">
+                {{ 'lifestyle-2' | placeholder_svg_tag }}
+            </div>
+        {% endif %}
+            
+            <div class="hero_content">
+                <div class="page-width container">
+                    <div class="hero_text_wrap">
+                        {% if section.settings.hero_heading != blank %}
+                            <h2>{{ section.settings.hero_heading }}</h2>
+                        {% endif %}
+                        {% if section.settings.hero_text != blank %}
+                            <p>{{ section.settings.hero_text }}</p>
+                        {% endif %}
+                        {% if section.settings.hero_text != blank %}
+                            <p class="hero_text_2">{{ section.settings.hero_text_2 }}</p>
+                        {% endif %}
+                        {% if section.settings.hero_btn != blank %}
+                            <a href="#" class="hero_btn our_btn">{{ section.settings.hero_btn }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+    </div>
+    <div class="hero_bottom">
+        {{ section.settings.hero_bottom }}
+    </div>
+</div>
+
+<style>
+    {% comment %}
+    -- CSS is Related to this section only 
+    -- Main Header CSS and Fonts will only work on Homepage because i didn't created custom.css file. Because its not on requirement
+    {% endcomment %}
+    @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
+    .jost-<uniquifier> {
+        font-family: "Jost", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: <weight>;
+        font-style: normal;
+    }
+    body, h1, h2, h3, h4, h5, .h0, .h1, .h2, .h3, .h4, .h5 {
+        font-family: "Jost", sans-serif;
+    }
+    p {
+        font-weight:400;
+    }
+    .our_btn {
+        background-image: url(https://cdn.shopify.com/s/files/1/0952/4631/9894/files/arrow.png?v=1756403153);
+        background-repeat: no-repeat;
+        background-position: center right 19px;
+        padding: 10px 60px 10px 30px;
+        transition:0.5s;
+    }
+    .our_btn:hover {
+        background-position: center right 14px;
+    }
+    .hero_top {
+        background :#F5F5F5;
+        padding: 10px 0 ;
+    }
+    .hero_top > .container{
+        width:100%;
+        display:flex;
+        align-items:center;
+    }
+    .hero_top .container > * {
+        width:100%
+    }
+    .hero_bottom {
+        background:#F5F5F5;
+        font-size:18px;
+        text-align:center;
+    }
+    .logo_text {
+        font-size:24px;
+        color:#000;
+    }
+    .ideal_gift_text {
+        text-align:center;
+    }
+    .choose_gift {
+        display: inline-flex;
+        justify-content: flex-end;
+    }
+    .choose_gift a {
+        background: #FFF544;
+        text-decoration: none;
+        color: #000;
+        padding: 11px 30px;
+        text-transform: uppercase;
+        line-height: 18px;
+    }
+    .hero_banner {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+    }
+    .hero_banner img.hero_img {
+        width: 100%;
+        display: block;
+    }
+    .hero_content {   
+        position: absolute;
+        bottom: 2%;
+        left: 0;
+        padding: 20px;
+    }
+    .hero_content h2 {
+        font-size: 48px;
+        margin: 0 0 15px;
+        font-weight:500;
+    }
+    .hero_content p {
+        font-size: 18px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        color:#000;
+        line-height:25px;
+    }
+    .hero_content .hero_btn {
+        background-color:rgb(0, 0, 0);
+        color: #fff;
+        text-decoration: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-top:20px;
+    }
+    .hero_text_wrap {
+        max-width: 500px;
+        background: #fffffff0;
+        padding: 0 20px 20px;
+        display: flex;
+        flex-wrap: wrap;
+    }
+    @media all and (max-width:989px) {
+        .tisso_nav .choose_gift {
+            display:none;
+        }
+        .tisso_nav ul {
+            padding-left:0;
+        }
+        .tisso_nav ul li {
+            list-style: none;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    }
+    @media all and (min-width:990px) {
+        .header--middle-left {
+            grid-template-columns: 1fr auto 1fr !important;
+        }
+        .header__icons {
+            padding-right:0;
+        }
+    }
+    @media all and (min-width:768px) {
+        header.header {
+            padding: 10px 10px;
+        }
+        .header__heading-link {
+            padding:0;
+        }
+    }
+    @media all and (max-width:767px) {
+        .hero_top {
+            display:none;
+        }
+        .header__icons {
+            display:none;
+        } 
+        .hero_content {   
+            position: unset;
+            margin:0 auto;
+        }
+        .hero_content h2 {
+            font-size:38px;
+        }
+        .hero_banner {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .hero_image {
+            position: relative;
+            width:100%;
+            order:2;
+        }
+        .hero_text_2 {
+            display:none;
+        }
+        .hero_text_wrap {
+            justify-content:center;
+            padding:0;
+        }
+        .hero_content .hero_btn {
+            position: absolute;
+            bottom: 30px;
+            margin: 0 auto;
+            max-width: 186px;
+            left: 0;
+            right: 0;
+            text-align:center;
+        }
+        .tisso_nav .choose_gift {
+            display:block;
+        }
+    }
+
+    @media all and (max-width:480px) {
+
+    }
+</style>
+
+{%- schema -%}
+    {
+        "name": "Banner Section",
+        "class": "banner-homepage",
+        "disabled_on": {
+            "groups": ["header", "footer"]
+        },
+        "settings": [
+            {
+                "type": "header",
+                "content": "== Design Options"
+            },
+            {
+                "type": "image_picker",
+                "id": "image",
+                "label": "Banner Image",
+                "info": "Image Dimension should be : "
+            },
+            {
+                "type": "header",
+                "content": "== Banner Text"
+            },
+            {
+                "type": "text",
+                "id": "hero_heading",
+                "label": "Hero Heading",
+            },
+            {
+                "type": "text",
+                "id": "hero_text",
+                "label": "Hero Text",
+            },
+            {
+                "type": "text",
+                "id": "hero_text_2",
+                "label": "Hero Text 2",
+            },
+            {
+                "type": "text",
+                "id": "hero_btn",
+                "label": "Hero Button",
+            },
+            {
+                "type": "text",
+                "id": "hero_bottom",
+                "label": "Hero Bottom Text",
+            },
+        ],
+        "presets": [
+            {
+                "name": "Banner Section",
+                "category": "EcomExperts",
+            }
+        ]
+    }    	
+{%- endschema -%}

@@ -1,5 +1,28 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
+    "banner_7pTfia": {
+      "type": "banner",
+      "name": "Banner Section",
+      "settings": {
+        "ideal_gift_text": "Find the ideal gift for your loved ones.",
+        "choose_gift": "Choose Gift",
+        "choose_gift_link": "#",
+        "hero_heading": "The Gift Guide",
+        "hero_text": "Discover Joy: Your Ultimate Holiday Gift Destination.",
+        "hero_text_2": "Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.",
+        "hero_btn": "Shop Now",
+        "hero_bottom": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+      }
+    },
     "image_banner": {
       "type": "image-banner",
       "blocks": {
@@ -26,50 +49,89 @@
         "heading",
         "button"
       ],
+      "disabled": true,
       "settings": {
         "image_overlay_opacity": 40,
         "image_height": "large",
-        "desktop_content_position": "bottom-center",
-        "show_text_box": false,
         "image_behavior": "none",
+        "desktop_content_position": "bottom-center",
         "desktop_content_alignment": "center",
+        "show_text_box": false,
         "color_scheme": "scheme-3",
-        "mobile_content_alignment": "center",
         "stack_images_on_mobile": false,
+        "mobile_content_alignment": "center",
         "show_text_below": false
       }
     },
-    "featured_collection": {
-      "type": "featured-collection",
+    "tisso_vision_collection_EGApLN": {
+      "type": "tisso_vision_collection",
+      "blocks": {
+        "product_7JwyHz": {
+          "type": "product",
+          "settings": {
+            "product": "floral-white-top",
+            "coordinate_top": "60",
+            "coordinate_left": "25"
+          }
+        },
+        "product_GqLmGq": {
+          "type": "product",
+          "settings": {
+            "product": "blue-silk-tuxedo",
+            "coordinate_top": "70",
+            "coordinate_left": "70"
+          }
+        },
+        "product_y664aj": {
+          "type": "product",
+          "settings": {
+            "product": "classic-leather-jacket",
+            "coordinate_top": "50",
+            "coordinate_left": "50"
+          }
+        },
+        "product_9f8bMk": {
+          "type": "product",
+          "settings": {
+            "product": "olive-green-jacket",
+            "coordinate_top": "70",
+            "coordinate_left": "65"
+          }
+        },
+        "product_bfbtge": {
+          "type": "product",
+          "settings": {
+            "product": "navy-sport-jacket",
+            "coordinate_top": "50",
+            "coordinate_left": "50"
+          }
+        },
+        "product_4BG4Pc": {
+          "type": "product",
+          "settings": {
+            "product": "silk-summer-top",
+            "coordinate_top": "60",
+            "coordinate_left": "25"
+          }
+        }
+      },
+      "block_order": [
+        "product_7JwyHz",
+        "product_GqLmGq",
+        "product_y664aj",
+        "product_9f8bMk",
+        "product_bfbtge",
+        "product_4BG4Pc"
+      ],
+      "name": "Tisso Vision Collection",
       "settings": {
-        "title": "Featured products",
-        "heading_size": "h2",
-        "description": "",
-        "show_description": false,
-        "description_style": "body",
-        "collection": "all",
-        "products_to_show": 8,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "full_width": false,
-        "show_view_all": true,
-        "view_all_style": "solid",
-        "enable_desktop_slider": false,
-        "swipe_on_mobile": false,
-        "image_ratio": "adapt",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "quick_add": "none",
-        "columns_mobile": "2",
-        "padding_top": 44,
-        "padding_bottom": 36
+        "heading": "Tisso Vision in the wild"
       }
     }
   },
   "order": [
+    "banner_7pTfia",
     "image_banner",
-    "featured_collection"
+    "tisso_vision_collection_EGApLN"
   ]
 }
